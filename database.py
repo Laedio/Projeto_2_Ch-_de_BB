@@ -42,6 +42,23 @@ def salvar_confirmacao(nome, fralda, mimo, presenca):
     folha = book.active
     
     lista_convidados = []
+
+    import re # Adicione este import no topo do arquivo se não tiver
+
+    def salvar_confirmacao(nome, fralda, mimo, presenca):
+        # Remove números usando Expressão Regular (Regex)
+        nome_limpo = re.sub(r'[0-9]', '', nome)
+        
+        # Formata: remove espaços extras e coloca a primeira letra em maiúscula
+        nome_final = nome_limpo.strip().title()
+        
+        # Se o nome ficar vazio após remover os números, podemos definir um padrão
+        if not nome_final:
+            nome_final = "Convidado Anônimo"
+
+        # ... (resto do seu código que abre o Excel e salva)
+        # Use 'nome_final' na hora de salvar na célula:
+        # folha.cell(row=linha_vazia, column=2).value = nome_final
     
     # min_row=2 pula o cabeçalho
     for linha in folha.iter_rows(min_row=2, values_only=True):

@@ -38,7 +38,12 @@
             <form action="/" method="POST">
                 <div class="input-grupo">
                     <label for="nome">Seu Nome:</label>
-                    <input type="text" id="nome" name="nome_completo" placeholder="Quem está vindo?" required>
+                    <input type="text" 
+                        name="nome_completo" 
+                        placeholder="Digite seu nome" 
+                        required 
+                        pattern="[A-Za-zÀ-ÿ\s]+" 
+                        title="Por favor, use apenas letras e espaços. Números não são permitidos.">
                 </div>
 
                 <div class="input-grupo">
