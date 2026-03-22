@@ -6,7 +6,7 @@
 </head>
 <body style="background-color: #f9fafb; font-family: sans-serif;">
 
-    <div style="max-width: 900px; margin: 40px auto; padding: 20px; background: white; border-radius: 15px; shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div style="max-width: 900px; margin: 40px auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         
         <h1 style="text-align: center; color: #db2777;">Painel de Convidados 🎀</h1>
 
@@ -40,11 +40,12 @@
                     </td>
                     <td style="padding: 12px;">{{ c.fralda }}</td>
             
-                    <td style="padding: 12px; font-style: italic; color: #555;">
-                        {% if c.mimo and c.mimo != "Nenhum" %}
-                            "{{ c.mimo }}"
+                    <td style="padding: 12px; color: #555;">
+                        {# Lógica correta: se não for vazio e não for "nenhum", mostra o texto limpo #}
+                        {% if c.mimo and c.mimo.strip() != "" and c.mimo.lower() != "nenhum" %}
+                            {{ c.mimo }}
                         {% else %}
-                            <span style="color: #ccc;">-</span>
+                            <span style="color: #ccc;">Nenhum</span>
                         {% endif %}
                     </td>
                 </tr>
