@@ -42,8 +42,8 @@
                         name="nome_completo" 
                         placeholder="Digite seu nome" 
                         required 
-                        pattern="[A-Za-zÀ-ÿ\s]+" 
-                        title="Por favor, use apenas letras e espaços. Números não são permitidos.">
+                        pattern="^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]*$" 
+                        title="O nome deve começar com uma letra e não pode conter apenas espaços ou números.">
                 </div>
 
                 <div class="input-grupo">
