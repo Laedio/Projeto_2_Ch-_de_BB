@@ -1,0 +1,143 @@
+/* 1. RESET E DEFINIÇÕES GERAIS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background-color: #fdf2f8; /* Rosa pastel bem suave */
+    color: #4a044e; /* Roxo escuro para contraste e leitura */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* 2. O CONTAINER (Estilo Stripe: Branco, Bordas Arredondadas e Sombra) */
+.container {
+    background-color: #ffffff;
+    max-width: 450px;
+    width: 100%;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* 3. CABEÇALHO DO CONVITE */
+.topo-convite {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.emoji-decor {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+h1 {
+    font-size: 1.8rem;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    color: #db2777; /* Rosa vibrante do convite */
+    text-transform: uppercase;
+}
+
+h1 span {
+    color: #be185d;
+    font-weight: 800;
+}
+
+.mensagem {
+    margin-top: 15px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #701a75;
+    font-style: italic;
+}
+
+/* 4. DETALHES DO EVENTO (Cards minimalistas) */
+.detalhes {
+    background-color: #fce7f3;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    font-size: 0.9rem;
+}
+
+.detalhes div {
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f9a8d4;
+    padding-bottom: 8px;
+}
+
+.detalhes div:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* 5. FORMULÁRIO (Inputs modernos) */
+h3 {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.input-grupo {
+    margin-bottom: 15px;
+}
+
+.input-grupo label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #fbcfe8;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    outline: none;
+}
+
+input:focus, select:focus {
+    border-color: #db2777;
+    box-shadow: 0 0 0 4px rgba(219, 39, 119, 0.1);
+}
+
+/* 6. BOTÃO DE CONFIRMAÇÃO */
+.btn-confirmar {
+    width: 100%;
+    background-color: #db2777;
+    color: white;
+    border: none;
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.btn-confirmar:hover {
+    background-color: #be185d;
+}
+
+.btn-confirmar:active {
+    transform: scale(0.98);
+}
+
+/* 7. RESPONSIVIDADE (Mobile First) */
+@media (max-width: 480px) {
+    .container {
+        padding: 25px;
+    }
+}

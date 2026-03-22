@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chá da Ayla Maria</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <main class="container">
+        <header class="topo-convite">
+            <span class="emoji-decor">🎀</span>
+            <h1>CHÁ DA <br> <span>AYLA MARIA</span></h1>
+            <p class="mensagem">"Estou quase chegando e já quero festa! Esperamos você para junto compartilhar desse momento de alegria."</p>
+        </header>
+
+        <section class="detalhes">
+            <div class="data-hora">
+                <p><strong>Sábado, 07 de Fevereiro</strong></p>
+                <p>Às 20:00HS</p>
+            </div>
+
+            <div class="presentes">
+                <p><strong>Fraldas:</strong> P, M ou G (Huggies ou Pampers)</p>
+                <p>+ 1 Mimo da sua preferência</p>
+            </div>
+
+            <div class="local">
+                <p>📍 Rua Primeiro de Maio, B47</p>
+                <p>Conj. Celso Daniel - Ténone</p>
+            </div>
+        </section>
+
+        <section class="formulario-sessao">
+            <h3>Confirme sua presença abaixo:</h3>
+            
+            <form action="/" method="POST">
+                <div class="input-grupo">
+                    <label for="nome">Seu Nome:</label>
+                    <input type="text" id="nome" name="nome_completo" placeholder="Quem está vindo?" required>
+                </div>
+
+                <div class="input-grupo">
+                    <label for="fralda">Tamanho da Fralda:</label>
+                    <select id="fralda" name="tamanho_fralda" required>
+                        <option value="" disabled selected>Escolha um tamanho</option>
+                        <option value="P">P</option>
+                        <option value="M">M</option>
+                        <option value="G">G</option>
+                    </select>
+                </div>
+                <div class="campo-grupo" style="margin-bottom: 15px;">
+                    <label for="presenca" style="display: block; font-weight: bold; color: #555;">Você poderá ir? 😍</label>
+                    <select name="presenca" id="presenca" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="" disabled selected>Selecione uma opção...</option>
+                        <option value="Sim">Sim, estarei presente!</option>
+                        <option value="Não">Infelizmente não poderei ir</option>
+                    </select>
+                </div>
+
+                <div class="input-grupo">
+                    <label for="mimo">Mimo Extra:</label>
+                    <input type="text" id="mimo" name="mimo_extra" placeholder="O que vai trazer de mimo?">
+                </div>
+                
+
+                <button type="submit" class="btn-confirmar">Confirmar Presença</button>
+            </form>
+        </section>
+    </main>
+
+</body>
+</html>
