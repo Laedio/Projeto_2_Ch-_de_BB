@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file # send_file movido para aqui
 import os
 from database import inicializar_banco, salvar_confirmacao, ler_confirmacoes
 
@@ -22,18 +22,14 @@ def index():
         return render_template("index.html")
     
     if request.method == "POST":
-        # DESCRIÇÃO: Captura todos os dados do formulário
         nome = request.form.get("nome_completo")
         fralda = request.form.get("tamanho_fralda")
         mimo = request.form.get("mimo_extra", "Nenhum")
         presenca = request.form.get("presenca") 
 
-        # DESCRIÇÃO: Salva no Excel
         salvar_confirmacao(nome, fralda, mimo, presenca)
         
-        # DESCRIÇÃO: Prepara a mensagem personalizada para a próxima tela
         flash(f"Oba, {nome}! Sua confirmação foi enviada com sucesso. 🎉")
-        
         return redirect(url_for('sucesso'))
 
 # ---------------------------------------------------------
@@ -67,18 +63,15 @@ def admin():
         return redirect('/login') 
     
     dados = ler_confirmacoes()
-    
-    # DESCRIÇÃO: Inicializamos os contadores
     confirmados_sim = 0
     confirmados_nao = 0
     
-    # DESCRIÇÃO: Dicionário para somar os tamanhos das fraldas
+    # DESCRIÇÃO: Dicionário ajustado apenas para P, M e G
     resumo_fraldas = {"P": 0, "M": 0, "G": 0}
     
     for c in dados:
         if c.get('presenca') == "Sim":
             confirmados_sim += 1
-            # DESCRIÇÃO: Pega o tamanho da fralda e soma +1 no resumo
             tamanho = c.get('fralda')
             if tamanho in resumo_fraldas:
                 resumo_fraldas[tamanho] += 1
@@ -86,10 +79,35 @@ def admin():
             confirmados_nao += 1
                 
     return render_template("admin.html", 
-                       convidados=dados, 
-                       sim=confirmados_sim, 
-                       nao=confirmados_nao,
-                       fraldas=resumo_fraldas) # Enviamos o dicionário para o HTML
-# DESCRIÇÃO: Este bloco liga o servidor. Sem ele, o site não abre!
+                           convidados=dados, 
+                           sim=confirmados_sim, 
+                           nao=confirmados_nao,
+                           fraldas=resumo_fraldas)
+
+# ---------------------------------------------------------
+# ROTA 5: DOWNLOAD DA PLANILHA
+# ---------------------------------------------------------
+@app.route("/download")
+def download():
+    if not session.get('logado'):
+        return redirect('/login')
+        
+    NOME_PLANILHA = "lista_ayla.xlsx" 
+    caminho_completo = os.path.join(os.getcwd(), NOME_PLANILHA)
+    
+    if os.path.exists(caminho_completo):
+        # DESCRIÇÃO: 'download_name' muda o nome do arquivo que o usuário recebe.
+        # Isso protege o seu arquivo original 'lista_ayla.xlsx' de ser confundido.
+        return send_file(
+            caminho_completo, 
+            as_attachment=True, 
+            download_name="RELATORIO_PRESENCA_AYLA.xlsx"
+        )
+    else:
+        return "Erro: O relatório ainda não foi gerado. Cadastre um convidado primeiro!"
+
+# ---------------------------------------------------------
+# EXECUÇÃO (SEMPRE POR ÚLTIMO)
+# ---------------------------------------------------------
 if __name__ == "__main__":
     app.run(debug=True)
