@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Admin</title>
+</head>
+<body style="background-color: #f9fafb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 300px; text-align: center;">
+        <h2 style="color: #db2777;">Acesso Restrito</h2>
+        
+        {% if erro %}
+            <p style="color: red; font-size: 0.8rem;">{{ erro }}</p>
+        {% endif %}
+
+        <form action="/login" method="POST">
+            <input type="password" name="senha" placeholder="Digite a senha" required 
+                   style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+            <button type="submit" style="width: 100%; padding: 10px; background: #db2777; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Entrar no Painel
+            </button>
+        </form>
+    </div>
+</body>
+</html>
