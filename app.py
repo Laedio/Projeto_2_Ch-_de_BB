@@ -67,19 +67,29 @@ def admin():
         return redirect('/login') 
     
     dados = ler_confirmacoes()
+    
+    # DESCRIÇÃO: Inicializamos os contadores
     confirmados_sim = 0
     confirmados_nao = 0
+    
+    # DESCRIÇÃO: Dicionário para somar os tamanhos das fraldas
+    resumo_fraldas = {"P": 0, "M": 0, "G": 0}
     
     for c in dados:
         if c.get('presenca') == "Sim":
             confirmados_sim += 1
+            # DESCRIÇÃO: Pega o tamanho da fralda e soma +1 no resumo
+            tamanho = c.get('fralda')
+            if tamanho in resumo_fraldas:
+                resumo_fraldas[tamanho] += 1
         else:
             confirmados_nao += 1
                 
     return render_template("admin.html", 
-                           convidados=dados, 
-                           sim=confirmados_sim, 
-                           nao=confirmados_nao)
-
+                       convidados=dados, 
+                       sim=confirmados_sim, 
+                       nao=confirmados_nao,
+                       fraldas=resumo_fraldas) # Enviamos o dicionário para o HTML
+# DESCRIÇÃO: Este bloco liga o servidor. Sem ele, o site não abre!
 if __name__ == "__main__":
     app.run(debug=True)

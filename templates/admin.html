@@ -10,13 +10,22 @@
         
         <h1 style="text-align: center; color: #db2777;">Painel de Convidados 🎀</h1>
 
-        <div style="display: flex; gap: 15px; margin-bottom: 25px; text-align: center;">
+        <div style="display: flex; gap: 15px; margin-bottom: 15px; text-align: center;">
             <div style="flex: 1; background: #ecfdf5; padding: 10px; border-radius: 8px;">
                 <small>CONFIRMADOS</small><br><strong>{{ sim }}</strong>
             </div>
             <div style="flex: 1; background: #fef2f2; padding: 10px; border-radius: 8px;">
                 <small>AUSENTES</small><br><strong>{{ nao }}</strong>
             </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 25px; text-align: center;">
+            {% for tamanho, total in fraldas.items() %}
+            <div style="flex: 1; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 10px; border-radius: 8px;">
+                <small style="color: #db2777; font-weight: bold;">TAM {{ tamanho }}</small><br>
+                <strong style="font-size: 1.2rem;">{{ total }}</strong>
+            </div>
+            {% endfor %}
         </div>
 
         <table style="width: 100%; border-collapse: collapse; text-align: center;">
@@ -26,7 +35,8 @@
                     <th style="padding: 15px;">Nome</th>
                     <th style="padding: 15px;">Vai?</th>
                     <th style="padding: 15px;">Fralda</th>
-                    <th style="padding: 15px;">Mimo Extra</th> </tr>
+                    <th style="padding: 15px;">Mimo Extra</th>
+                </tr>
             </thead>
             <tbody>
                 {% for c in convidados %}
@@ -39,9 +49,7 @@
                         </span>
                     </td>
                     <td style="padding: 12px;">{{ c.fralda }}</td>
-            
                     <td style="padding: 12px; color: #555;">
-                        {# Lógica correta: se não for vazio e não for "nenhum", mostra o texto limpo #}
                         {% if c.mimo and c.mimo.strip() != "" and c.mimo.lower() != "nenhum" %}
                             {{ c.mimo }}
                         {% else %}
