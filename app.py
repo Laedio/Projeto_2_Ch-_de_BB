@@ -84,6 +84,17 @@ def admin():
                            nao=confirmados_nao,
                            fraldas=resumo_fraldas)
 
+
+@app.route("/logout")
+def logout():
+    # DESCRIÇÃO: Remove a chave 'logado' da sessão do navegador
+    session.pop('logado', None)
+    
+    # DESCRIÇÃO: Envia uma mensagem de aviso e volta para o login
+    flash("Você saiu do painel administrativo.")
+    return redirect(url_for('login'))
+
+
 # ---------------------------------------------------------
 # ROTA 5: DOWNLOAD DA PLANILHA
 # ---------------------------------------------------------
