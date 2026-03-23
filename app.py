@@ -1,17 +1,16 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import os
-# DESCRIÇÃO: Importamos as funções que gerenciam o Excel
 from database import inicializar_banco, salvar_confirmacao, ler_confirmacoes
 
 app = Flask(__name__)
 
-# DESCRIÇÃO: Chave para criptografar as sessões. Fundamental para o login funcionar.
+# DESCRIÇÃO: Chave de segurança para as sessões e mensagens flash
 app.secret_key = 'ayla_secret_2026' 
 
-# DESCRIÇÃO: Senha definida para o acesso administrativo.
+# DESCRIÇÃO: Senha do painel
 SENHA_ADMIN = "ayla123"
 
-# DESCRIÇÃO: Garante que o arquivo Excel exista antes do site abrir.
+# Inicializa o banco de dados
 inicializar_banco()
 
 # ---------------------------------------------------------
@@ -23,12 +22,18 @@ def index():
         return render_template("index.html")
     
     if request.method == "POST":
+        # DESCRIÇÃO: Captura todos os dados do formulário
         nome = request.form.get("nome_completo")
         fralda = request.form.get("tamanho_fralda")
         mimo = request.form.get("mimo_extra", "Nenhum")
         presenca = request.form.get("presenca") 
 
+        # DESCRIÇÃO: Salva no Excel
         salvar_confirmacao(nome, fralda, mimo, presenca)
+        
+        # DESCRIÇÃO: Prepara a mensagem personalizada para a próxima tela
+        flash(f"Oba, {nome}! Sua confirmação foi enviada com sucesso. 🎉")
+        
         return redirect(url_for('sucesso'))
 
 # ---------------------------------------------------------
@@ -45,9 +50,8 @@ def sucesso():
 def login():
     if request.method == 'POST':
         senha_digitada = request.form.get('senha')
-        
         if senha_digitada == SENHA_ADMIN:
-            session['logado'] = True # DESCRIÇÃO: Dá permissão de acesso
+            session['logado'] = True
             return redirect('/admin')
         else:
             return render_template('login.html', erro="Senha incorreta!")
@@ -59,7 +63,6 @@ def login():
 # ---------------------------------------------------------
 @app.route("/admin")
 def admin():
-    # DESCRIÇÃO: Verifica se o usuário passou pelo login
     if not session.get('logado'):
         return redirect('/login') 
     
@@ -78,8 +81,5 @@ def admin():
                            sim=confirmados_sim, 
                            nao=confirmados_nao)
 
-# ---------------------------------------------------------
-# EXECUÇÃO DO APP (ESTA DEVE SER SEMPRE A ÚLTIMA LINHA)
-# ---------------------------------------------------------
 if __name__ == "__main__":
     app.run(debug=True)
