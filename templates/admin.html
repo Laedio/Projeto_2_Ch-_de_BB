@@ -77,11 +77,12 @@
                     </td>
                     <td style="padding: 12px;">{{ c.fralda }}</td>
                     <td style="padding: 12px; color: #555;">
-                        {% if c.mimo and c.mimo.strip() != "" and c.mimo.lower() != "nenhum" %}
+                        {% if c.mimo and c.mimo.strip() != "" and c.mimo.lower() != "nenhum" and c.mimo != "Não se aplica" %}
                             {{ c.mimo }}
                         {% else %}
-                            <span style="color: #ccc;">Nenhum</span>
+                            <span style="color: #ccc;">{{ c.mimo if c.mimo == "Não se aplica" else "Nenhum" }}</span>
                         {% endif %}
+                    </td>
                     </td>
                     <td style="padding: 12px;">
                         <a href="{{ url_for('excluir', nome=c.nome) }}" 

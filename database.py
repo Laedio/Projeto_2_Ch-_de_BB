@@ -1,100 +1,70 @@
-import openpyxl
+import sqlite3
 import os
-import pandas as pd
+import re
 from datetime import datetime
 
-# 1. Definimos o nome EXATO do arquivo que você criou na pasta
-NOME_EXCEL = 'lista_ayla.xlsx'
+# 1. Definimos o nome do arquivo do Banco de Dados
+NOME_BANCO = 'dados_ayla.db'
+
+def conectar_banco():
+    """Cria uma conexão com o SQLite e permite acessar colunas pelo nome."""
+    conn = sqlite3.connect(NOME_BANCO)
+    conn.row_factory = sqlite3.Row  # Isso permite usar convidado['nome'] em vez de linha[1]
+    return conn
 
 def inicializar_banco():
-    # Apenas verifica se você criou o arquivo como combinamos
-    if not os.path.exists(NOME_EXCEL):
-        print(f"ERRO: O arquivo {NOME_EXCEL} não foi encontrado na pasta!")
-    else:
-        print("Planilha do Excel detectada e pronta para uso!")
-
-import re # Certifique-se de que o 're' está importado no topo do arquivo!
+    """Cria a tabela de convidados se ela ainda não existir."""
+    with conectar_banco() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS convidados (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                data TEXT NOT NULL,
+                nome TEXT NOT NULL,
+                fralda TEXT,
+                mimo TEXT,
+                presenca TEXT NOT NULL
+            )
+        """)
+    print("Banco de Dados SQL detectado e pronto para uso!")
 
 def salvar_confirmacao(nome, fralda, mimo, presenca):
-    # 1. REMOVE ESPAÇOS: O .strip() tira espaços invisíveis do início e do fim
+    # --- MANTEMOS SUA LÓGICA DE LIMPEZA ---
     nome_limpo = nome.strip()
-
-    # 2. TRAVA DE SEGURANÇA: Se após o strip o nome estiver vazio, para tudo!
     if not nome_limpo:
-        print("Erro: Tentativa de salvar um nome vazio ou apenas com espaços.")
-        return  # Sai da função sem salvar nada no Excel
+        print("Erro: Tentativa de salvar um nome vazio.")
+        return 
 
-    # 3. REMOVE NÚMEROS: O regex re.sub garante que 'João123' vire 'João'
     nome_sem_numeros = re.sub(r'[0-9]', '', nome_limpo)
-
-    # 4. FORMATAÇÃO: Deixa a primeira letra de cada nome maiúscula (Ex: laedio -> Laedio)
     nome_final = nome_sem_numeros.title()
 
-    # --- AGORA SEGUE O CÓDIGO NORMAL DE SALVAR NO EXCEL ---
-    book = openpyxl.load_workbook(NOME_EXCEL)
-    folha = book.active
-    
-    # Encontra a linha vazia
-    linha_vazia = 2 
-    while folha.cell(row=linha_vazia, column=2).value is not None:
-        linha_vazia += 1
+    # --- AGORA SALVAMOS NO SQLITE EM VEZ DE OPENPYXL ---
+    data_atual = datetime.now().strftime('%d/%m/%Y %H:%M')
+    mimo_final = mimo if mimo else "Nenhum"
 
-    # Salva os dados (Usando o 'nome_final' que limpamos acima)
-    folha.cell(row=linha_vazia, column=1).value = datetime.now().strftime('%d/%m/%Y %H:%M')
-    folha.cell(row=linha_vazia, column=2).value = nome_final # Nome limpo aqui!
-    folha.cell(row=linha_vazia, column=3).value = fralda
-    folha.cell(row=linha_vazia, column=4).value = mimo if mimo else "Nenhum"
-    folha.cell(row=linha_vazia, column=5).value = presenca
+    with conectar_banco() as conn:
+        conn.execute("""
+            INSERT INTO convidados (data, nome, fralda, mimo, presenca)
+            VALUES (?, ?, ?, ?, ?)
+        """, (data_atual, nome_final, fralda, mimo_final, presenca))
     
-    book.save(NOME_EXCEL)
-    print(f"Sucesso: {nome_final} foi salvo na planilha.")
+    print(f"Sucesso: {nome_final} foi salvo no Banco de Dados SQL.")
 
 def ler_confirmacoes():
-    if not os.path.exists(NOME_EXCEL):
+    """Lê todos os dados do banco e retorna como uma lista de dicionários."""
+    if not os.path.exists(NOME_BANCO):
         return []
 
-    book = openpyxl.load_workbook(NOME_EXCEL)
-    folha = book.active
-    
-    lista_convidados = []
-    
-    # min_row=2 pula o cabeçalho colorido
-    for linha in folha.iter_rows(min_row=2, values_only=True):
-        # linha[0]=Data, [1]=Nome, [2]=Fralda, [3]=Mimo, [4]=Presença
-        if linha[1]: 
-            convidado = {
-                'data': linha[0],
-                'nome': linha[1],
-                'fralda': linha[2],
-                'mimo': linha[3],
-                'presenca': linha[4]
-            }
-            lista_convidados.append(convidado)
-            
-    return lista_convidados
+    with conectar_banco() as conn:
+        cursor = conn.execute("SELECT * FROM convidados ORDER BY id DESC")
+        # Transformamos as linhas do SQL em dicionários para o seu admin.html continuar funcionando
+        return [dict(row) for row in cursor.fetchall()]
 
-def excluir_confirmacao(nome_para_excluir):
+def excluir_confirmacao(id_ou_nome):
     """
-    Localiza um convidado pelo nome e remove sua linha da planilha de forma inteligente.
+    Exclui um convidado. 
+    DICA: Agora você pode excluir pelo ID (muito mais seguro) ou pelo nome.
     """
-    if os.path.exists(NOME_EXCEL):
-        df = pd.read_excel(NOME_EXCEL)
-        
-        # 1. Descobre qual é o nome REAL da coluna de nome (ex: 'nome', 'nome_completo', 'Nome')
-        # Buscamos a primeira coluna que tenha 'nome' no texto
-        colunas_nome = [c for c in df.columns if 'nome' in c.lower()]
-        
-        if colunas_nome:
-            coluna_real = colunas_nome[0] # Pega a primeira que encontrar
-            
-            # 2. Filtra: mantém apenas quem NÃO tem o nome que queremos excluir
-            # Usamos .astype(str) para garantir que a comparação funcione mesmo com números
-            df_novo = df[df[coluna_real].astype(str) != str(nome_para_excluir)]
-            
-            # 3. Salva a nova versão da planilha
-            df_novo.to_excel(NOME_EXCEL, index=False)
-            return True
-        else:
-            print("❌ Erro: Não encontrei nenhuma coluna de 'nome' na planilha.")
-            return False
-    return False
+    with conectar_banco() as conn:
+        # Tenta excluir pelo nome para manter compatibilidade com o que fizemos antes
+        conn.execute("DELETE FROM convidados WHERE nome = ?", (id_ou_nome,))
+        return True
