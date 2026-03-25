@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chá da Ayla Maria</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        #mapa {
+            height: 300px; /* Altura do mapa */
+            width: 100%;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #db2777; /* Cor rosa do chá */
+        }
+    </style>
 </head>
 <body>
 
@@ -27,8 +41,34 @@
             </div>
 
             <div class="local">
-                <p>📍 Rua Primeiro de Maio, B47</p>
-                <p>Conj. Celso Daniel - Ténone</p>
+                <p>📍 Rua Cariri, 2339</p>
+                <p>Tabapuá, Caucaia - CE</p>
+            </div>
+
+            
+            <div style="padding: 20px; background: white; border-radius: 20px; margin-bottom: 30px;">
+                <h3 style="color: #db2777; text-align: center;">📍 Local do Evento</h3>
+                <p style="text-align: center; font-size: 0.9rem;">Rua Cariri, 2339 - Tabapuá, Caucaia</p>
+                
+                <div id="mapa"></div>
+
+                <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=-3.74018, -38.620577" target="_blank" 
+                    style="background-color: #4285F4; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: bold;">
+                        🚗 Abrir no Google Maps
+                    </a>
+                    <a href="https://waze.com/ul?ll=-3.74018, -38.620577&navigate=yes" target="_blank" 
+                    style="background-color: #33CCFF; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: bold;">
+                        🚙 Abrir no Waze
+                    </a>
+                </div>
+            </div>
+
+            <div id="countdown-container" style="text-align: center; background: #fdf2f8; padding: 15px; border-radius: 15px; margin: 20px 0; border: 1px dashed #db2777;">
+                <h4 style="color: #db2777; margin-bottom: 10px;">Falta pouquinho para o encontro! 💖</h4>
+                <div id="countdown" style="font-family: 'Courier New', Courier, monospace; font-size: 1.2rem; font-weight: bold; color: #be185d;">
+                    00d 00h 00m 00s
+                </div>
             </div>
         </section>
 
@@ -74,6 +114,55 @@
             </form>
         </section>
     </main>
+    <script>
+        // 1. Coordenadas do local (Latitude e Longitude)
+        // DICA: Podes pegar estas coordenadas no Google Maps clicando com o botão direito no local
+        var lat = -3.74018; 
+        var lon = -38.620577;
 
+        // 2. Inicializa o mapa focado nas coordenadas
+        var map = L.map('mapa').setView([lat, lon], 15);
+
+        // 3. Adiciona a "camada" visual do mapa (OpenStreetMap)
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // 4. Adiciona um marcador (o "pin" rosa)
+        var marker = L.marker([lat, lon]).addTo(map);
+        marker.bindPopup("<b>Chá da Ayla!</b><br>Esperamos por ti.").openPopup();
+    </script>
+
+
+    <script>
+        // 1. Defina a data do Chá da Ayla (Ano, Mês [0-11], Dia, Hora, Minuto)
+        // Exemplo: 15 de Maio de 2026 às 15:00
+        const dataEvento = new Date("May 15, 2026 15:00:00").getTime();
+
+        const x = setInterval(function() {
+            const agora = new Date().getTime();
+            const distancia = dataEvento - agora;
+
+            // Cálculos de tempo
+            const dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
+            const horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+            const segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+
+            // Exibe o resultado
+            document.getElementById("countdown").innerHTML = dias + "d " + horas + "h " + minutos + "m " + segundos + "s ";
+
+            // Se a contagem terminar (Chegou o dia ou já passou)
+            if (distancia < 0) {
+                clearInterval(x);
+                // Muda o texto
+                document.getElementById("countdown").innerHTML = "✨ CHEGOU O GRANDE DIA! 🎉";
+                // Muda o estilo para destacar a comemoração
+                document.getElementById("countdown-container").style.background = "#be185d";
+                document.getElementById("countdown").style.color = "#ffffff";
+                document.getElementById("countdown-container").style.border = "none";
+            }
+        }, 1000);
+    </script>
 </body>
 </html>

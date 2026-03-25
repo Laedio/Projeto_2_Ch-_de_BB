@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin - Chá da Ayla</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body style="background-color: #f9fafb; font-family: sans-serif;">
 
@@ -75,5 +77,77 @@
             <a href="/" style="color: #db2777; text-decoration: none;">← Voltar ao Convite</a>
         </div>
     </div>
+
+    <div style="width: 300px; margin: 20px auto;">
+        <canvas id="graficoFraldas"></canvas>
+    </div>
+
+    <script>
+        // 1. Pegamos os dados que vieram do Python (app.py)
+        const dadosFraldas = {{ fraldas | tojson }};
+        
+        // 2. Separamos as etiquetas (P, M, G) e os valores (quantidades)
+        const labels = Object.keys(dadosFraldas);
+        const valores = Object.values(dadosFraldas);
+
+        // 3. Criamos o gráfico
+        const ctx = document.getElementById('graficoFraldas').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie', // Pode mudar para 'bar' se preferir barras
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Quantidade de Fraldas',
+                    data: valores,
+                    // Paleta de cores com alto contraste para P, M, G
+                    backgroundColor: [
+                        'rgba(244, 114, 182, 0.9)', // Rosa Claro (P)
+                        'rgba(219, 39, 119, 0.9)', // Rosa Choque (M)
+                        'rgba(190, 24, 93, 0.9)', // Bordô (G)
+                        'rgba(112, 26, 117, 0.9)' // Roxo Escuro (Caso apareça um tamanho GG futuramente)
+                    ],
+                    // Cor da borda para destacar as fatias
+                    borderColor: [
+                        '#ffffff', // Branco
+                        '#ffffff',
+                        '#ffffff'
+                    ],
+                    borderWidth: 2, // Borda mais grossa
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#db2777', // Cor rosa das legendas
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Resumo de Fraldas Confirmadas',
+                        color: '#db2777', // Título rosa
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                // Efeitos de Animação e Sombra (Advanced UX)
+                animation: {
+                    animateScale: true,
+                    animateRotate: true
+                },
+                responsive: true,
+                // Truque de CSS para sombra (Shadow Effect)
+                onHover: (event, chartElement) => {
+                    event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                }
+            }
+        });
+    </script>
 </body>
 </html>
