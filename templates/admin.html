@@ -12,6 +12,16 @@
         
         <h1 style="text-align: center; color: #db2777;">Painel de Convidados 🎀</h1>
 
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div style="padding: 10px; margin-bottom: 20px; background-color: #dcfce7; color: #166534; border-radius: 8px; text-align: center; font-weight: bold;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
         <div style="margin-bottom: 20px;">
             <input type="text" id="inputBusca" onkeyup="filtrarNomes()" placeholder="🔍 Pesquisar por nome do convidado..." 
                 style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #db2777; font-size: 1rem; outline: none;">
@@ -53,7 +63,7 @@
                     <th style="padding: 15px;">Vai?</th>
                     <th style="padding: 15px;">Fralda</th>
                     <th style="padding: 15px;">Mimo Extra</th>
-                </tr>
+                    <th style="padding: 15px;">Ações</th> </tr>
             </thead>
             <tbody>
                 {% for c in convidados %}
@@ -73,6 +83,13 @@
                             <span style="color: #ccc;">Nenhum</span>
                         {% endif %}
                     </td>
+                    <td style="padding: 12px;">
+                        <a href="{{ url_for('excluir', nome=c.nome) }}" 
+                           onclick="return confirm('Tem certeza que deseja excluir o convidado {{ c.nome }}?')" 
+                           style="text-decoration: none; font-size: 1.2rem; cursor: pointer;" title="Excluir">
+                            🗑️
+                        </a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -88,92 +105,50 @@
     </div>
 
     <script>
-        // 1. Pegamos os dados que vieram do Python (app.py)
         const dadosFraldas = {{ fraldas | tojson }};
-        
-        // 2. Separamos as etiquetas (P, M, G) e os valores (quantidades)
         const labels = Object.keys(dadosFraldas);
         const valores = Object.values(dadosFraldas);
 
-        // 3. Criamos o gráfico
         const ctx = document.getElementById('graficoFraldas').getContext('2d');
         new Chart(ctx, {
-            type: 'pie', // Pode mudar para 'bar' se preferir barras
+            type: 'pie',
             data: {
                 labels: labels,
                 datasets: [{
                     label: 'Quantidade de Fraldas',
                     data: valores,
-                    // Paleta de cores com alto contraste para P, M, G
                     backgroundColor: [
-                        'rgba(244, 114, 182, 0.9)', // Rosa Claro (P)
-                        'rgba(219, 39, 119, 0.9)', // Rosa Choque (M)
-                        'rgba(190, 24, 93, 0.9)', // Bordô (G)
-                        'rgba(112, 26, 117, 0.9)' // Roxo Escuro (Caso apareça um tamanho GG futuramente)
+                        'rgba(244, 114, 182, 0.9)', 
+                        'rgba(219, 39, 119, 0.9)', 
+                        'rgba(190, 24, 93, 0.9)', 
+                        'rgba(112, 26, 117, 0.9)'
                     ],
-                    // Cor da borda para destacar as fatias
-                    borderColor: [
-                        '#ffffff', // Branco
-                        '#ffffff',
-                        '#ffffff'
-                    ],
-                    borderWidth: 2, // Borda mais grossa
+                    borderColor: ['#ffffff', '#ffffff', '#ffffff'],
+                    borderWidth: 2,
                 }]
             },
             options: {
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: '#db2777', // Cor rosa das legendas
-                            font: {
-                                weight: 'bold'
-                            }
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Resumo de Fraldas Confirmadas',
-                        color: '#db2777', // Título rosa
-                        font: {
-                            size: 16,
-                            weight: 'bold'
-                        }
-                    }
+                    legend: { position: 'bottom', labels: { color: '#db2777', font: { weight: 'bold' } } },
+                    title: { display: true, text: 'Resumo de Fraldas Confirmadas', color: '#db2777', font: { size: 16, weight: 'bold' } }
                 },
-                // Efeitos de Animação e Sombra (Advanced UX)
-                animation: {
-                    animateScale: true,
-                    animateRotate: true
-                },
-                responsive: true,
-                // Truque de CSS para sombra (Shadow Effect)
-                onHover: (event, chartElement) => {
-                    event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
-                }
+                animation: { animateScale: true, animateRotate: true },
+                responsive: true
             }
         });
     </script>
 
     <script>
     function filtrarNomes() {
-        // 1. Pegamos o que o usuário digitou e transformamos em MINÚSCULO (para não dar erro de A vs a)
         let input = document.getElementById("inputBusca");
         let filtro = input.value.toLowerCase();
-        
-        // 2. Pegamos a tabela e todas as linhas (tr) do corpo (tbody)
         let tabela = document.querySelector("table");
         let linhas = tabela.getElementsByTagName("tr");
 
-        // 3. Percorremos todas as linhas (começando da 1 para pular o cabeçalho)
         for (let i = 1; i < linhas.length; i++) {
-            // Pegamos a primeira coluna (onde está o NOME)
             let colunaNome = linhas[i].getElementsByTagName("td")[1];
-            
             if (colunaNome) {
                 let textoNome = colunaNome.textContent || colunaNome.innerText;
-                
-                // 4. Se o nome contiver o que foi digitado, MOSTRA. Se não, ESCONDE.
                 if (textoNome.toLowerCase().indexOf(filtro) > -1) {
                     linhas[i].style.display = "";
                 } else {

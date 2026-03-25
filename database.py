@@ -1,5 +1,6 @@
 import openpyxl
 import os
+import pandas as pd
 from datetime import datetime
 
 # 1. Definimos o nome EXATO do arquivo que você criou na pasta
@@ -71,3 +72,29 @@ def ler_confirmacoes():
             lista_convidados.append(convidado)
             
     return lista_convidados
+
+def excluir_confirmacao(nome_para_excluir):
+    """
+    Localiza um convidado pelo nome e remove sua linha da planilha de forma inteligente.
+    """
+    if os.path.exists(NOME_EXCEL):
+        df = pd.read_excel(NOME_EXCEL)
+        
+        # 1. Descobre qual é o nome REAL da coluna de nome (ex: 'nome', 'nome_completo', 'Nome')
+        # Buscamos a primeira coluna que tenha 'nome' no texto
+        colunas_nome = [c for c in df.columns if 'nome' in c.lower()]
+        
+        if colunas_nome:
+            coluna_real = colunas_nome[0] # Pega a primeira que encontrar
+            
+            # 2. Filtra: mantém apenas quem NÃO tem o nome que queremos excluir
+            # Usamos .astype(str) para garantir que a comparação funcione mesmo com números
+            df_novo = df[df[coluna_real].astype(str) != str(nome_para_excluir)]
+            
+            # 3. Salva a nova versão da planilha
+            df_novo.to_excel(NOME_EXCEL, index=False)
+            return True
+        else:
+            print("❌ Erro: Não encontrei nenhuma coluna de 'nome' na planilha.")
+            return False
+    return False

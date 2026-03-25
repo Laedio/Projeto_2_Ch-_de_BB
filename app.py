@@ -135,5 +135,20 @@ def download():
 # ---------------------------------------------------------
 # EXECUÇÃO
 # ---------------------------------------------------------
+@app.route("/excluir/<nome>")
+def excluir(nome):
+    # SEGURANÇA: Só quem está logado pode excluir
+    if not session.get('logado'):
+        return redirect('/login')
+    
+    from database import excluir_confirmacao
+    if excluir_confirmacao(nome):
+        flash(f"Convidado {nome} removido com sucesso!")
+    else:
+        flash("Erro ao tentar remover convidado.")
+        
+    return redirect(url_for('admin'))
+
+
 if __name__ == "__main__":
     app.run(debug=True)
