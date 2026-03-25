@@ -31,9 +31,15 @@ def index():
     
     if request.method == "POST":
         nome = request.form.get("nome_completo")
-        fralda = request.form.get("tamanho_fralda")
-        mimo = request.form.get("mimo_extra", "Nenhum")
-        presenca = request.form.get("presenca") 
+        presenca = request.form.get("presenca") # "Sim" ou "Não"
+
+        if presenca == "Não":
+            fralda = "Não se aplica"
+            mimo = "Não se aplica"
+        else:
+            # Se for "Sim", pega os valores que o usuário preencheu
+            fralda = request.form.get("tamanho_fralda")
+            mimo = request.form.get("mimo_extra", "Nenhum")
 
         salvar_confirmacao(nome, fralda, mimo, presenca)
         
@@ -75,12 +81,20 @@ def admin():
     confirmados_sim = 0
     confirmados_nao = 0
     
+    # Reiniciamos o dicionário para garantir que comece do zero
     resumo_fraldas = {"P": 0, "M": 0, "G": 0}
     
     for c in dados:
-        if c.get('presenca') == "Sim":
+        # 1. Padronizamos a resposta de presença (Remove espaços e ignora maiúsculas/minúsculas)
+        presenca = str(c.get('presenca', '')).strip().capitalize()
+        
+        if presenca == "Sim":
             confirmados_sim += 1
-            tamanho = c.get('fralda')
+            
+            # 2. Pegamos o tamanho da fralda e limpamos espaços extras
+            tamanho = str(c.get('fralda', '')).strip().upper()
+            
+            # 3. Só somamos se o tamanho for P, M ou G
             if tamanho in resumo_fraldas:
                 resumo_fraldas[tamanho] += 1
         else:
