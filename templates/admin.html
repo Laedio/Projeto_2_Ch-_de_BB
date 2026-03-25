@@ -12,6 +12,11 @@
         
         <h1 style="text-align: center; color: #db2777;">Painel de Convidados 🎀</h1>
 
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="inputBusca" onkeyup="filtrarNomes()" placeholder="🔍 Pesquisar por nome do convidado..." 
+                style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #db2777; font-size: 1rem; outline: none;">
+        </div>
+
         <div style="text-align: right; margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px;">
             <a href="/download" style="background-color: #166534; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 0.9rem;">
                 📥 Baixar Planilha
@@ -148,6 +153,35 @@
                 }
             }
         });
+    </script>
+
+    <script>
+    function filtrarNomes() {
+        // 1. Pegamos o que o usuário digitou e transformamos em MINÚSCULO (para não dar erro de A vs a)
+        let input = document.getElementById("inputBusca");
+        let filtro = input.value.toLowerCase();
+        
+        // 2. Pegamos a tabela e todas as linhas (tr) do corpo (tbody)
+        let tabela = document.querySelector("table");
+        let linhas = tabela.getElementsByTagName("tr");
+
+        // 3. Percorremos todas as linhas (começando da 1 para pular o cabeçalho)
+        for (let i = 1; i < linhas.length; i++) {
+            // Pegamos a primeira coluna (onde está o NOME)
+            let colunaNome = linhas[i].getElementsByTagName("td")[1];
+            
+            if (colunaNome) {
+                let textoNome = colunaNome.textContent || colunaNome.innerText;
+                
+                // 4. Se o nome contiver o que foi digitado, MOSTRA. Se não, ESCONDE.
+                if (textoNome.toLowerCase().indexOf(filtro) > -1) {
+                    linhas[i].style.display = "";
+                } else {
+                    linhas[i].style.display = "none";
+                }
+            }
+        }
+    }
     </script>
 </body>
 </html>
