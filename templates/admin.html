@@ -2,162 +2,177 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Chá da Ayla</title>
-
+    <title>Painel Administrativo - Ayla</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body style="background-color: #f9fafb; font-family: sans-serif;">
+<body style="background-color: #f9fafb; font-family: 'Segoe UI', sans-serif; color: #374151; margin: 0; padding: 20px;">
 
-    <div style="max-width: 900px; margin: 40px auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         
-        <h1 style="text-align: center; color: #db2777;">Painel de Convidados 🎀</h1>
+        <h1 style="text-align: center; color: #db2777; margin-bottom: 30px;">Painel Administrativo - Ayla Maria 🎀</h1>
 
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            {% for message in messages %}
-              <div style="padding: 10px; margin-bottom: 20px; background-color: #dcfce7; color: #166534; border-radius: 8px; text-align: center; font-weight: bold;">
-                {{ message }}
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
+        <section style="background: #fff5f8; padding: 20px; border-radius: 15px; border: 1px solid #fbcfe8; margin-bottom: 30px;">
+            <h3 style="color: #db2777; margin-top: 0;">🎫 Gerar Novo Convite</h3>
+            <form action="/admin/gerar_link" method="POST" style="display: flex; gap: 10px;">
+                <input type="text" name="nome_novo_convidado" placeholder="Nome do Convidado (Ex: Tia Bete)" required 
+                    style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none;">
+                <button type="submit" style="background: #db2777; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold;">Gerar Link ✨</button>
+            </form>
 
-        <div style="margin-bottom: 20px;">
-            <input type="text" id="inputBusca" onkeyup="filtrarNomes()" placeholder="🔍 Pesquisar por nome do convidado..." 
-                style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #db2777; font-size: 1rem; outline: none;">
-        </div>
-
-        <div style="text-align: right; margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px;">
-            <a href="/download" style="background-color: #166534; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 0.9rem;">
-                📥 Baixar Planilha
-            </a>
-
-            <a href="/logout" style="background-color: #ef4444; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 0.9rem;">
-                Log out 🚪
-            </a>
-        </div>
-
-        <div style="display: flex; gap: 15px; margin-bottom: 15px; text-align: center;">
-            <div style="flex: 1; background: #ecfdf5; padding: 10px; border-radius: 8px;">
-                <small>CONFIRMADOS</small><br><strong>{{ sim }}</strong>
-            </div>
-            <div style="flex: 1; background: #fef2f2; padding: 10px; border-radius: 8px;">
-                <small>AUSENTES</small><br><strong>{{ nao }}</strong>
-            </div>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-bottom: 25px; text-align: center;">
-            {% for tamanho, total in fraldas.items() %}
-            <div style="flex: 1; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 10px; border-radius: 8px;">
-                <small style="color: #db2777; font-weight: bold;">TAM {{ tamanho }}</small><br>
-                <strong style="font-size: 1.2rem;">{{ total }}</strong>
-            </div>
-            {% endfor %}
-        </div>
-
-        <table style="width: 100%; border-collapse: collapse; text-align: center;">
-            <thead>
-                <tr style="background-color: #db2777; color: white;">
-                    <th style="padding: 15px;">Data</th>
-                    <th style="padding: 15px;">Nome</th>
-                    <th style="padding: 15px;">Vai?</th>
-                    <th style="padding: 15px;">Fralda</th>
-                    <th style="padding: 15px;">Mimo Extra</th>
-                    <th style="padding: 15px;">Ações</th> </tr>
-            </thead>
-            <tbody>
-                {% for c in convidados %}
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 12px; color: #666; font-size: 0.85rem;">{{ c.data }}</td>
-                    <td style="padding: 12px; font-weight: bold;">{{ c.nome }}</td>
-                    <td style="padding: 12px;">
-                        <span style="padding: 5px 10px; border-radius: 15px; font-size: 12px; background: {{ '#dcfce7' if c.presenca == 'Sim' else '#fee2e2' }}; color: {{ '#166534' if c.presenca == 'Sim' else '#991b1b' }};">
-                            {{ c.presenca }}
-                        </span>
-                    </td>
-                    <td style="padding: 12px;">{{ c.fralda }}</td>
-                    <td style="padding: 12px; color: #555;">
-                        {% if c.mimo and c.mimo.strip() != "" and c.mimo.lower() != "nenhum" and c.mimo != "Não se aplica" %}
-                            {{ c.mimo }}
-                        {% else %}
-                            <span style="color: #ccc;">{{ c.mimo if c.mimo == "Não se aplica" else "Nenhum" }}</span>
-                        {% endif %}
-                    </td>
-                    </td>
-                    <td style="padding: 12px;">
-                        <a href="{{ url_for('excluir', nome=c.nome) }}" 
-                           onclick="return confirm('Tem certeza que deseja excluir o convidado {{ c.nome }}?')" 
-                           style="text-decoration: none; font-size: 1.2rem; cursor: pointer;" title="Excluir">
-                            🗑️
-                        </a>
-                    </td>
-                </tr>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div style="margin-top: 15px;">
+                {% for message in messages %}
+                    {% if '/convite/' in message %}
+                        <div style="padding: 15px; background: white; border: 1px solid #db2777; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #be185d;">Link Gerado:</strong> 
+                                <code id="linkTexto" style="color: #333; font-weight: bold;">{{ request.host_url[:-1] }}{{ message.split(': ')[1] }}</code>
+                            </div>
+                            <button onclick="copiarLink()" style="background: #db2777; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Copiar 📋</button>
+                        </div>
+                    {% else %}
+                        <div style="padding: 10px; background: #dcfce7; color: #166534; border-radius: 8px; text-align: center; font-weight: bold;">{{ message }}</div>
+                    {% endif %}
                 {% endfor %}
-            </tbody>
-        </table>
+                </div>
+              {% endif %}
+            {% endwith %}
+        </section>
 
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="/" style="color: #db2777; text-decoration: none;">← Voltar ao Convite</a>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center;">
+            <input type="text" id="inputBusca" onkeyup="filtrarNomes()" placeholder="🔍 Pesquisar convidado na lista..." 
+                style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; outline: none; font-size: 1rem;">
+            <a href="/download" style="background-color: #166534; color: white; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold;">📥 Planilha</a>
+            <a href="/logout" style="background-color: #ef4444; color: white; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold;">Sair 🚪</a>
         </div>
-    </div>
 
-    <div style="width: 300px; margin: 20px auto;">
-        <canvas id="graficoFraldas"></canvas>
+        <div style="display: flex; gap: 15px; margin-bottom: 25px; text-align: center;">
+            <div style="flex: 1; background: #ecfdf5; padding: 15px; border-radius: 12px; border: 1px solid #10b981;">
+                <small style="color: #065f46; font-weight: bold;">CONFIRMADOS</small><br><strong style="font-size: 1.8rem;">{{ sim }}</strong>
+            </div>
+            <div style="flex: 1; background: #fef2f2; padding: 15px; border-radius: 12px; border: 1px solid #ef4444;">
+                <small style="color: #991b1b; font-weight: bold;">AUSENTES</small><br><strong style="font-size: 1.8rem;">{{ nao }}</strong>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto; margin-bottom: 40px;">
+            <table style="width: 100%; border-collapse: collapse; background: white; min-width: 900px;">
+                <thead>
+                    <tr style="background-color: #db2777; color: white; text-align: left;">
+                        <th style="padding: 15px;">Data/Hora</th>
+                        <th style="padding: 15px;">Nome do Convidado</th>
+                        <th style="padding: 15px; text-align: center;">Presença</th>
+                        <th style="padding: 15px; text-align: center;">Fralda</th>
+                        <th style="padding: 15px;">Mimo Escolhido</th>
+                        <th style="padding: 15px; text-align: center;">Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabela">
+                    {% for c in convidados %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; color: #666; font-size: 0.8rem;">{{ c.data if c.data else '--/--/--' }}</td>
+                        <td style="padding: 12px; font-weight: bold;">{{ c.nome }}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span style="padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; background: {{ '#dcfce7' if c.presenca == 'Sim' else '#fee2e2' }}; color: {{ '#166534' if c.presenca == 'Sim' else '#991b1b' }};">
+                                {{ c.presenca }}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; text-align: center; font-weight: bold;">{{ c.fralda if c.fralda and c.fralda != "" else 'N/A' }}</td>
+                        <td style="padding: 12px;">
+                            {% if c.presenca == "Não" or c.mimo == "N/A" %} <span style="color: #ccc;">N/A</span>
+                            {% elif c.mimo == "Nenhum" or not c.mimo %} <span style="color: #ccc;">Nenhum</span>
+                            {% else %} <span style="color: #be185d; font-weight: 500;">🎁 {{ c.mimo }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <a href="{{ url_for('excluir', nome=c.nome) }}" onclick="return confirm('Excluir {{ c.nome }}?')" style="text-decoration: none; font-size: 1.2rem;">🗑️</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-around; margin-top: 40px; flex-wrap: wrap; gap: 20px;">
+            <div style="width: 250px;">
+                <canvas id="graficoFraldas"></canvas>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; max-width: 400px;">
+                {% for tamanho, total in fraldas.items() %}
+                <div style="flex: 1; min-width: 80px; background: #fff5f8; border: 1px solid #fbcfe8; padding: 15px; border-radius: 10px; text-align: center;">
+                    <small style="color: #db2777; font-weight: bold;">TAM {{ tamanho }}</small><br>
+                    <strong style="font-size: 1.5rem;">{{ total }}</strong>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <hr style="margin: 50px 0 30px 0; border: 0; border-top: 1px dashed #ccc;">
+        <section style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #1e293b;">🕵️‍♂️ Últimos Acessos ao Site (Segurança)</h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+                    <thead>
+                        <tr style="text-align: left; color: #64748b; border-bottom: 2px solid #e2e8f0;">
+                            <th style="padding: 10px;">Horário</th>
+                            <th style="padding: 10px;">Quem Acessou</th>
+                            <th style="padding: 10px;">Ação / Página</th>
+                            <th style="padding: 10px;">IP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px; color: #94a3b8;">{{ log.timestamp }}</td>
+                            <td style="padding: 10px; font-weight: bold;">{{ log.usuario }}</td>
+                            <td style="padding: 10px; color: #db2777;">{{ log.endpoint }}</td>
+                            <td style="padding: 10px; color: #64748b;"><code>{{ log.ip }}</code></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </div>
 
     <script>
-        const dadosFraldas = {{ fraldas | tojson }};
-        const labels = Object.keys(dadosFraldas);
-        const valores = Object.values(dadosFraldas);
-
-        const ctx = document.getElementById('graficoFraldas').getContext('2d');
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Quantidade de Fraldas',
-                    data: valores,
-                    backgroundColor: [
-                        'rgba(244, 114, 182, 0.9)', 
-                        'rgba(219, 39, 119, 0.9)', 
-                        'rgba(190, 24, 93, 0.9)', 
-                        'rgba(112, 26, 117, 0.9)'
-                    ],
-                    borderColor: ['#ffffff', '#ffffff', '#ffffff'],
-                    borderWidth: 2,
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: '#db2777', font: { weight: 'bold' } } },
-                    title: { display: true, text: 'Resumo de Fraldas Confirmadas', color: '#db2777', font: { size: 16, weight: 'bold' } }
-                },
-                animation: { animateScale: true, animateRotate: true },
-                responsive: true
-            }
-        });
-    </script>
-
-    <script>
-    function filtrarNomes() {
-        let input = document.getElementById("inputBusca");
-        let filtro = input.value.toLowerCase();
-        let tabela = document.querySelector("table");
-        let linhas = tabela.getElementsByTagName("tr");
-
-        for (let i = 1; i < linhas.length; i++) {
-            let colunaNome = linhas[i].getElementsByTagName("td")[1];
-            if (colunaNome) {
-                let textoNome = colunaNome.textContent || colunaNome.innerText;
-                if (textoNome.toLowerCase().indexOf(filtro) > -1) {
-                    linhas[i].style.display = "";
-                } else {
-                    linhas[i].style.display = "none";
-                }
-            }
+        function copiarLink() {
+            const link = document.getElementById("linkTexto").innerText;
+            navigator.clipboard.writeText(link).then(() => alert("Link copiado! 📋"));
         }
-    }
+
+        function filtrarNomes() {
+            let input = document.getElementById("inputBusca").value.toLowerCase();
+            let linhas = document.querySelectorAll("#corpoTabela tr");
+            linhas.forEach(linha => {
+                let nome = linha.cells[1].textContent.toLowerCase();
+                linha.style.display = nome.includes(input) ? "" : "none";
+            });
+        }
+
+        const dadosFraldas = {{ fraldas | tojson }};
+        if (Object.values(dadosFraldas).some(v => v > 0)) {
+            new Chart(document.getElementById('graficoFraldas'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(dadosFraldas),
+                    datasets: [{
+                        data: Object.values(dadosFraldas),
+                        backgroundColor: ['#f472b6', '#db2777', '#be185d', '#701a75'],
+                        borderWidth: 2
+                    }]
+                },
+                options: { 
+                    responsive: true,
+                    plugins: { 
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Resumo de Fraldas' }
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>

@@ -1,70 +1,102 @@
 import sqlite3
 import os
 import re
+import uuid
 from datetime import datetime
 
-# 1. Definimos o nome do arquivo do Banco de Dados
+# Nome do banco de dados
 NOME_BANCO = 'dados_ayla.db'
 
 def conectar_banco():
-    """Cria uma conexão com o SQLite e permite acessar colunas pelo nome."""
+    """Cria uma conexão com o SQLite."""
     conn = sqlite3.connect(NOME_BANCO)
-    conn.row_factory = sqlite3.Row  # Isso permite usar convidado['nome'] em vez de linha[1]
+    conn.row_factory = sqlite3.Row
     return conn
 
 def inicializar_banco():
-    """Cria a tabela de convidados se ela ainda não existir."""
+    """Cria a infraestrutura de tabelas necessária."""
     with conectar_banco() as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS convidados (
+        # TABELA 1: Confirmacoes - AJUSTADA PARA COLUNA 'data'
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS confirmacoes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                data TEXT NOT NULL,
                 nome TEXT NOT NULL,
                 fralda TEXT,
                 mimo TEXT,
-                presenca TEXT NOT NULL
+                presenca TEXT,
+                ip_address TEXT,
+                user_agent TEXT,
+                data TEXT  -- Nome exato que o app.py procura
             )
-        """)
-    print("Banco de Dados SQL detectado e pronto para uso!")
+        ''')
 
-def salvar_confirmacao(nome, fralda, mimo, presenca):
-    # --- MANTEMOS SUA LÓGICA DE LIMPEZA ---
-    nome_limpo = nome.strip()
-    if not nome_limpo:
-        print("Erro: Tentativa de salvar um nome vazio.")
-        return 
+        # TABELA 2: Convites únicos
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS convites (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                codigo_unico TEXT UNIQUE NOT NULL,
+                nome_convidado TEXT NOT NULL,
+                status TEXT DEFAULT 'pendente',
+                expira_em TIMESTAMP
+            )
+        ''')
 
-    nome_sem_numeros = re.sub(r'[0-9]', '', nome_limpo)
-    nome_final = nome_sem_numeros.title()
+        # TABELA 3: Segurança (ADICIONADA COLUNA USUARIO)
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS logs_seguranca (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ip TEXT,
+                user_agent TEXT,
+                endpoint TEXT,
+                usuario TEXT DEFAULT 'Visitante', -- <--- NOVA COLUNA
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+    print("🚀 Banco de dados atualizado!")
 
-    # --- AGORA SALVAMOS NO SQLITE EM VEZ DE OPENPYXL ---
-    data_atual = datetime.now().strftime('%d/%m/%Y %H:%M')
-    mimo_final = mimo if mimo else "Nenhum"
-
+def salvar_confirmacao(nome, fralda, mimo, presenca, ip="N/A", ua="N/A"):
+    """Salva a confirmação (Usada internamente ou via formulário)."""
+    nome_final = re.sub(r'[0-9]', '', nome.strip()).title()
+    mimo_final = mimo if mimo else "N/A"
+    data_agora = datetime.now().strftime("%d/%m/%Y %H:%M")
+    
     with conectar_banco() as conn:
         conn.execute("""
-            INSERT INTO convidados (data, nome, fralda, mimo, presenca)
-            VALUES (?, ?, ?, ?, ?)
-        """, (data_atual, nome_final, fralda, mimo_final, presenca))
-    
-    print(f"Sucesso: {nome_final} foi salvo no Banco de Dados SQL.")
+            INSERT INTO confirmacoes (nome, fralda, mimo, presenca, ip_address, user_agent, data)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (nome_final, fralda, mimo_final, presenca, ip, ua, data_agora))
+        conn.commit()
 
 def ler_confirmacoes():
-    """Lê todos os dados do banco e retorna como uma lista de dicionários."""
     if not os.path.exists(NOME_BANCO):
         return []
-
     with conectar_banco() as conn:
-        cursor = conn.execute("SELECT * FROM convidados ORDER BY id DESC")
-        # Transformamos as linhas do SQL em dicionários para o seu admin.html continuar funcionando
+        cursor = conn.execute("SELECT * FROM confirmacoes ORDER BY id DESC")
         return [dict(row) for row in cursor.fetchall()]
 
-def excluir_confirmacao(id_ou_nome):
-    """
-    Exclui um convidado. 
-    DICA: Agora você pode excluir pelo ID (muito mais seguro) ou pelo nome.
-    """
+def excluir_confirmacao(nome):
     with conectar_banco() as conn:
-        # Tenta excluir pelo nome para manter compatibilidade com o que fizemos antes
-        conn.execute("DELETE FROM convidados WHERE nome = ?", (id_ou_nome,))
+        conn.execute("DELETE FROM confirmacoes WHERE nome = ?", (nome,))
+        conn.commit()
         return True
+
+def registrar_log(ip, ua, endpoint, usuario="Visitante"):
+    """Agora aceita o nome do usuário para o log."""
+    try:
+        with conectar_banco() as conn:
+            conn.execute("INSERT INTO logs_seguranca (ip, user_agent, endpoint, usuario) VALUES (?, ?, ?, ?)", 
+                         (ip, ua, endpoint, usuario))
+            conn.commit()
+    except Exception as e:
+        print(f"⚠️ Erro ao registrar log: {e}")
+
+def gerar_novo_convite(nome_convidado):
+    token_curto = str(uuid.uuid4())[:4]
+    slug = re.sub(r'[^a-zA-Z0-9]', '-', nome_convidado.lower())
+    codigo = f"{slug}-{token_curto}"
+    
+    with conectar_banco() as conn:
+        conn.execute("INSERT INTO convites (codigo_unico, nome_convidado) VALUES (?, ?)", 
+                      (codigo, nome_convidado))
+        conn.commit()
+    return codigo

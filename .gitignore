@@ -1,5 +1,21 @@
+# Pastas do Python e Ambiente Virtual
 __pycache__/
-*.xlsx
-.env
 venv/
+.venv/
+env/
+
+# Banco de Dados (IMPORTANTE: Não subir os dados dos convidados)
+*.db
+*.sqlite3
+
+# Arquivos de Configuração e Senhas
 .env
+
+# Arquivos gerados pelo Excel/Pandas
+*.xlsx
+*.xls
+*.csv
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db

@@ -2,20 +2,129 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chá da Ayla Maria</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        #mapa {
-            height: 300px;
+        /* Reset para preenchimento total da tela */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #fff5f8;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
             width: 100%;
+            /* No mobile, removemos o padding excessivo para a tela ficar cheia */
+            padding: 0; 
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px; /* Limite para não esticar em tablets/PCs */
+            background: white;
+            min-height: 100vh; /* Faz o branco ir até o final da tela no mobile */
+            box-shadow: 0 0 20px rgba(219, 39, 119, 0.1);
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        /* Otimização de seções para preencher a largura */
+        header, section {
+            width: 100%;
+            padding: 20px;
+        }
+
+        header.topo-convite {
+            background: linear-gradient(to bottom, #fdf2f8, #ffffff);
+            text-align: center;
+            padding-top: 40px;
+        }
+
+        .topo-convite h1 {
+            color: #db2777;
+            font-size: 2rem;
+            line-height: 1.1;
+        }
+
+        .topo-convite span {
+            color: #be185d;
+            font-size: 2.2rem;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .mensagem {
+            font-style: italic;
+            color: #666;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        .detalhes {
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .detalhes div {
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        /* Ajuste do Mapa para ser responsivo */
+        #mapa { 
+            height: 250px; 
+            width: 100%; 
             border-radius: 15px;
-            margin-top: 20px;
-            border: 2px solid #db2777;
+            border: 2px solid #fce7f3;
+            z-index: 1; /* Garante que não sobreponha menus se houver */
+        }
+
+        .btn-confirmar {
+            background-color: #db2777;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-confirmar:hover { background-color: #be185d; }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Ajuste fino para desktop */
+        @media (min-width: 501px) {
+            body { padding: 20px; }
+            .container { 
+                min-height: auto; 
+                border-radius: 20px; 
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
@@ -23,144 +132,127 @@
 
     <main class="container">
         <header class="topo-convite">
-            <span class="emoji-decor">🎀</span>
+            <span class="emoji-decor" style="font-size: 3rem;">🎀</span>
             <h1>CHÁ DA <br> <span>AYLA MARIA</span></h1>
             <p class="mensagem">"Estou quase chegando e já quero festa! Esperamos você para junto compartilhar desse momento de alegria."</p>
         </header>
 
         <section class="detalhes">
             <div class="data-hora">
-                <p><strong>Sábado, 07 de Fevereiro</strong></p>
+                <p style="font-size: 1.1rem;">📅 <strong>Sábado, 07 de Fevereiro</strong></p>
                 <p>Às 20:00HS</p>
             </div>
 
-            <div class="presentes">
-                <p><strong>Fraldas:</strong> P, M ou G (Huggies ou Pampers)</p>
+            <div class="presentes" style="background: #fff5f8; border-radius: 15px; padding: 15px;">
+                <p>🎁 <strong>Fraldas:</strong> P, M ou G (Huggies ou Pampers)</p>
                 <p>+ 1 Mimo da sua preferência</p>
             </div>
 
-            <div class="local">
-                <p>📍 Rua Cariri, 2339</p>
-                <p>Tabapuá, Caucaia - CE</p>
-            </div>
-
-            <div style="padding: 20px; background: white; border-radius: 20px; margin-bottom: 30px;">
-                <h3 style="color: #db2777; text-align: center;">📍 Local do Evento</h3>
-                <p style="text-align: center; font-size: 0.9rem;">Rua Cariri, 2339 - Tabapuá, Caucaia</p>
+            <div style="margin-top: 30px;">
+                <h3 style="color: #db2777; margin-bottom: 10px;">📍 Local do Evento</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 15px;">Rua Cariri, 2339 - Tabapuá, Caucaia</p>
                 
                 <div id="mapa"></div>
 
                 <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=-3.74018, -38.620577" target="_blank" 
-                    style="background-color: #4285F4; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: bold;">
-                        🚗 Abrir no Google Maps
+                    <a href="https://www.google.com/maps/search/?api=1&query=-3.74018,-38.620577" target="_blank" 
+                    style="background-color: #4285F4; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: bold; flex: 1; text-align: center;">
+                        🚗 Google Maps
                     </a>
-                    <a href="https://waze.com/ul?ll=-3.74018, -38.620577&navigate=yes" target="_blank" 
-                    style="background-color: #33CCFF; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: bold;">
-                        🚙 Abrir no Waze
+                    <a href="https://waze.com/ul?ll=-3.74018,-38.620577&navigate=yes" target="_blank" 
+                    style="background-color: #33CCFF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: bold; flex: 1; text-align: center;">
+                        🚙 Waze
                     </a>
                 </div>
             </div>
 
-            <div id="countdown-container" style="text-align: center; background: #fdf2f8; padding: 15px; border-radius: 15px; margin: 20px 0; border: 1px dashed #db2777;">
-                <h4 style="color: #db2777; margin-bottom: 10px;">Falta pouquinho para o encontro! 💖</h4>
-                <div id="countdown" style="font-family: 'Courier New', Courier, monospace; font-size: 1.2rem; font-weight: bold; color: #be185d;">
+            <div id="countdown-container" style="background: #fdf2f8; padding: 15px; border-radius: 15px; margin: 30px 0; border: 1px dashed #db2777;">
+                <h4 style="color: #db2777; margin-bottom: 10px;">Falta pouquinho! 💖</h4>
+                <div id="countdown" style="font-family: monospace; font-size: 1.4rem; font-weight: bold; color: #be185d;">
                     00d 00h 00m 00s
                 </div>
             </div>
         </section>
 
-        <section class="formulario-sessao">
-            <h3>Confirme sua presença abaixo:</h3>
-            
-            <form action="/" method="POST">
-                <div class="input-grupo">
-                    <label for="nome">Seu Nome:</label>
-                    <input type="text" 
-                        name="nome_completo" 
-                        placeholder="Digite seu nome" 
-                        required 
-                        pattern="^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]*$" 
-                        title="O nome deve começar com uma letra e não pode conter apenas espaços ou números.">
-                </div>
+        <section class="formulario-sessao" style="padding-bottom: 50px;">
+            {% if nome %}
+                <h3 style="text-align: center;">Olá, <span style="color: #db2777;">{{ nome }}</span>! ✨</h3>
+                <p style="text-align: center; margin-bottom: 20px;">Confirme sua presença abaixo:</p>
+                
+                <form action="/confirmar/{{ token }}" method="POST">
+                    <input type="hidden" name="nome_invisivel" value="{{ nome }}">
 
-                <div class="campo-grupo" style="margin-bottom: 15px;">
-                    <label for="presenca" style="display: block; font-weight: bold; color: #555;">Você poderá ir? 😍</label>
-                    <select name="presenca" id="presenca" required onchange="ajustarCampos()" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
-                        <option value="" disabled selected>Selecione uma opção...</option>
-                        <option value="Sim">Sim, estarei presente!</option>
-                        <option value="Não">Infelizmente não poderei ir</option>
-                    </select>
-                </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #555;">Convidado:</label>
+                        <input type="text" value="{{ nome }}" disabled style="background-color: #f3f4f6;">
+                    </div>
 
-                <div class="input-grupo" id="secaoFralda" style="display: none;">
-                    <label for="fralda">Tamanho da Fralda:</label>
-                    <select id="fralda" name="tamanho_fralda">
-                        <option value="" disabled selected>Escolha um tamanho</option>
-                        <option value="P">P</option>
-                        <option value="M">M</option>
-                        <option value="G">G</option>
-                    </select>
-                </div>
+                    <div style="margin-bottom: 15px;">
+                        <label for="presenca" style="font-weight: bold; color: #555;">Você poderá ir? 😍</label>
+                        <select name="presenca" id="presenca" required onchange="ajustarCampos()">
+                            <option value="" disabled selected>Selecione uma opção...</option>
+                            <option value="Sim">Sim, estarei presente!</option>
+                            <option value="Não">Infelizmente não poderei ir</option>
+                        </select>
+                    </div>
 
-                <div class="input-grupo" id="secaoMimo" style="display: none;">
-                    <label for="mimo">Mimo Extra:</label>
-                    <input type="text" id="mimo" name="mimo_extra" placeholder="O que vai trazer de mimo?">
-                </div>
+                    <div id="secaoDetalhes" style="display: none; background: #fdf2f8; padding: 15px; border-radius: 10px; margin-top: 10px; border: 1px solid #fce7f3;">
+                        <div style="margin-bottom: 15px;">
+                            <label for="fralda" style="font-weight: bold;">Tamanho da Fralda:</label>
+                            <select id="fralda" name="tamanho_fralda">
+                                <option value="" disabled selected>Escolha um tamanho</option>
+                                <option value="P">P</option>
+                                <option value="M">M</option>
+                                <option value="G">G</option>
+                            </select>
+                        </div>
 
-                <button type="submit" class="btn-confirmar">Confirmar Presença</button>
-            </form>
+                        <div>
+                            <label for="mimo" style="font-weight: bold;">Mimo Extra (Opcional):</label>
+                            <input type="text" id="mimo" name="mimo_extra" placeholder="Ex: Sapatinho, body, etc.">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-confirmar" style="width: 100%; margin-top: 25px;">Confirmar Agora</button>
+                </form>
+            {% else %}
+                <p style="text-align: center; color: #db2777; font-weight: bold;">⚠️ Por favor, acesse através do link enviado.</p>
+            {% endif %}
         </section>
     </main>
 
     <script>
-    function ajustarCampos() {
-        const presenca = document.getElementById("presenca").value;
-        const secaoFralda = document.getElementById("secaoFralda");
-        const secaoMimo = document.getElementById("secaoMimo");
-        const inputFralda = document.getElementById("fralda");
-
-        if (presenca === "Sim") {
-            secaoFralda.style.display = "block";
-            secaoMimo.style.display = "block";
-            inputFralda.required = true; // Só é obrigatório se for "Sim"
-        } else {
-            secaoFralda.style.display = "none";
-            secaoMimo.style.display = "none";
-            inputFralda.required = false;
+        function ajustarCampos() {
+            const escolha = document.getElementById("presenca").value;
+            const secao = document.getElementById("secaoDetalhes");
+            const campoFralda = document.getElementById("fralda");
+            if (escolha === "Sim") {
+                secao.style.display = "block";
+                campoFralda.required = true;
+            } else {
+                secao.style.display = "none";
+                campoFralda.required = false;
+                campoFralda.value = "";
+            }
         }
-    }
-    </script>
-    <script>
+
+        // Mapa
         var lat = -3.74018; 
         var lon = -38.620577;
         var map = L.map('mapa').setView([lat, lon], 15);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        var marker = L.marker([lat, lon]).addTo(map);
-        marker.bindPopup("<b>Chá da Ayla!</b><br>Esperamos por ti.").openPopup();
-    </script>
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.marker([lat, lon]).addTo(map).bindPopup("<b>Chá da Ayla!</b>").openPopup();
 
-    <script>
+        // Cronômetro
         const dataEvento = new Date("May 15, 2026 15:00:00").getTime();
-        const x = setInterval(function() {
+        setInterval(function() {
             const agora = new Date().getTime();
-            const distancia = dataEvento - agora;
-            const dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
-            const horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
-            const segundos = Math.floor((distancia % (1000 * 60)) / 1000);
-
-            document.getElementById("countdown").innerHTML = dias + "d " + horas + "h " + minutos + "m " + segundos + "s ";
-
-            if (distancia < 0) {
-                clearInterval(x);
-                document.getElementById("countdown").innerHTML = "✨ CHEGOU O GRANDE DIA! 🎉";
-                document.getElementById("countdown-container").style.background = "#be185d";
-                document.getElementById("countdown").style.color = "#ffffff";
-                document.getElementById("countdown-container").style.border = "none";
-            }
+            const dist = dataEvento - agora;
+            const d = Math.floor(dist / 86400000);
+            const h = Math.floor((dist % 86400000) / 3600000);
+            const m = Math.floor((dist % 3600000) / 600000);
+            const s = Math.floor((dist % 60000) / 1000);
+            document.getElementById("countdown").innerHTML = d + "d " + h + "h " + m + "m " + s + "s";
         }, 1000);
     </script>
 </body>
