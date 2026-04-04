@@ -19,3 +19,14 @@ env/
 # Arquivos de sistema
 .DS_Store
 Thumbs.db
+
+# Logs do Flask e erros
+*.log
+
+# Pasta de configurações do VS Code (opcional, se você não quiser subir suas configs pessoais)
+.vscode/
+
+# Distribuição/Pacotes (caso você gere builds)
+dist/
+build/
+*.egg-info/

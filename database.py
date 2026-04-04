@@ -16,7 +16,7 @@ def conectar_banco():
 def inicializar_banco():
     """Cria a infraestrutura de tabelas necessária."""
     with conectar_banco() as conn:
-        # TABELA 1: Confirmacoes - AJUSTADA PARA COLUNA 'data'
+        # TABELA 1: Confirmacoes
         conn.execute('''
             CREATE TABLE IF NOT EXISTS confirmacoes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,7 +26,7 @@ def inicializar_banco():
                 presenca TEXT,
                 ip_address TEXT,
                 user_agent TEXT,
-                data TEXT  -- Nome exato que o app.py procura
+                data TEXT
             )
         ''')
 
@@ -41,21 +41,34 @@ def inicializar_banco():
             )
         ''')
 
-        # TABELA 3: Segurança (ADICIONADA COLUNA USUARIO)
+        # TABELA 3: Segurança
         conn.execute('''
             CREATE TABLE IF NOT EXISTS logs_seguranca (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 ip TEXT,
                 user_agent TEXT,
                 endpoint TEXT,
-                usuario TEXT DEFAULT 'Visitante', -- <--- NOVA COLUNA
+                usuario TEXT DEFAULT 'Visitante',
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-    print("🚀 Banco de dados atualizado!")
+    print("🚀 Banco de dados pronto!")
+
+# --- NOVA FUNÇÃO QUE ESTAVA FALTANDO ---
+def ler_logs_seguranca():
+    """Lê todos os logs de segurança do banco."""
+    if not os.path.exists(NOME_BANCO):
+        return []
+    try:
+        with conectar_banco() as conn:
+            # Ordena pelo mais recente (timestamp decrescente)
+            cursor = conn.execute("SELECT * FROM logs_seguranca ORDER BY timestamp DESC")
+            return [dict(row) for row in cursor.fetchall()]
+    except Exception as e:
+        print(f"⚠️ Erro ao ler logs: {e}")
+        return []
 
 def salvar_confirmacao(nome, fralda, mimo, presenca, ip="N/A", ua="N/A"):
-    """Salva a confirmação (Usada internamente ou via formulário)."""
     nome_final = re.sub(r'[0-9]', '', nome.strip()).title()
     mimo_final = mimo if mimo else "N/A"
     data_agora = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -81,7 +94,6 @@ def excluir_confirmacao(nome):
         return True
 
 def registrar_log(ip, ua, endpoint, usuario="Visitante"):
-    """Agora aceita o nome do usuário para o log."""
     try:
         with conectar_banco() as conn:
             conn.execute("INSERT INTO logs_seguranca (ip, user_agent, endpoint, usuario) VALUES (?, ?, ?, ?)", 

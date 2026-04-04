@@ -43,7 +43,7 @@
         <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center;">
             <input type="text" id="inputBusca" onkeyup="filtrarNomes()" placeholder="🔍 Pesquisar convidado na lista..." 
                 style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; outline: none; font-size: 1rem;">
-            <a href="/download" style="background-color: #166534; color: white; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold;">📥 Planilha</a>
+            <a href="/download" style="background-color: #166534; color: white; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold;">📥 Download Planilha</a>
             <a href="/logout" style="background-color: #ef4444; color: white; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold;">Sair 🚪</a>
         </div>
 
@@ -61,7 +61,7 @@
                 <thead>
                     <tr style="background-color: #db2777; color: white; text-align: left;">
                         <th style="padding: 15px;">Data/Hora</th>
-                        <th style="padding: 15px;">Nome do Convidado</th>
+                        <th style="padding: 15px;">Nome</th>
                         <th style="padding: 15px; text-align: center;">Presença</th>
                         <th style="padding: 15px; text-align: center;">Fralda</th>
                         <th style="padding: 15px;">Mimo Escolhido</th>
@@ -79,14 +79,9 @@
                             </span>
                         </td>
                         <td style="padding: 12px; text-align: center; font-weight: bold;">{{ c.fralda if c.fralda and c.fralda != "" else 'N/A' }}</td>
-                        <td style="padding: 12px;">
-                            {% if c.presenca == "Não" or c.mimo == "N/A" %} <span style="color: #ccc;">N/A</span>
-                            {% elif c.mimo == "Nenhum" or not c.mimo %} <span style="color: #ccc;">Nenhum</span>
-                            {% else %} <span style="color: #be185d; font-weight: 500;">🎁 {{ c.mimo }}</span>
-                            {% endif %}
-                        </td>
+                        <td style="padding: 12px;">{{ c.mimo }}</td>
                         <td style="padding: 12px; text-align: center;">
-                            <a href="{{ url_for('excluir', nome=c.nome) }}" onclick="return confirm('Excluir {{ c.nome }}?')" style="text-decoration: none; font-size: 1.2rem;">🗑️</a>
+                            <a href="{{ url_for('excluir', nome=c.nome) }}" onclick="return confirm('Excluir {{ c.nome }}?')" style="text-decoration: none;">🗑️</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -95,9 +90,7 @@
         </div>
 
         <div style="display: flex; align-items: center; justify-content: space-around; margin-top: 40px; flex-wrap: wrap; gap: 20px;">
-            <div style="width: 250px;">
-                <canvas id="graficoFraldas"></canvas>
-            </div>
+            <div style="width: 250px;"><canvas id="graficoFraldas"></canvas></div>
             <div style="display: flex; flex-wrap: wrap; gap: 10px; max-width: 400px;">
                 {% for tamanho, total in fraldas.items() %}
                 <div style="flex: 1; min-width: 80px; background: #fff5f8; border: 1px solid #fbcfe8; padding: 15px; border-radius: 10px; text-align: center;">
@@ -109,19 +102,20 @@
         </div>
 
         <hr style="margin: 50px 0 30px 0; border: 0; border-top: 1px dashed #ccc;">
+
         <section style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <h3 style="margin-top: 0; font-size: 1.1rem; color: #1e293b;">🕵️‍♂️ Últimos Acessos ao Site (Segurança)</h3>
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #1e293b;">🕵️‍♂️ Últimos Acessos ao Site</h3>
             <div style="overflow-x: auto;">
                 <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
                     <thead>
                         <tr style="text-align: left; color: #64748b; border-bottom: 2px solid #e2e8f0;">
                             <th style="padding: 10px;">Horário</th>
-                            <th style="padding: 10px;">Quem Acessou</th>
-                            <th style="padding: 10px;">Ação / Página</th>
+                            <th style="padding: 10px;">Quem</th>
+                            <th style="padding: 10px;">Ação</th>
                             <th style="padding: 10px;">IP</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="corpoLogs">
                         {% for log in logs %}
                         <tr style="border-bottom: 1px solid #f1f5f9;">
                             <td style="padding: 10px; color: #94a3b8;">{{ log.timestamp }}</td>
@@ -133,8 +127,12 @@
                     </tbody>
                 </table>
             </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button id="btnVerMais" onclick="carregarMaisAcessos()" style="background: white; border: 1px solid #cbd5e1; padding: 8px 20px; border-radius: 20px; color: #64748b; cursor: pointer; font-weight: bold;">
+                    Clique para ver mais ⬇️
+                </button>
+            </div>
         </section>
-
     </div>
 
     <script>
@@ -152,27 +150,35 @@
             });
         }
 
-        const dadosFraldas = {{ fraldas | tojson }};
-        if (Object.values(dadosFraldas).some(v => v > 0)) {
-            new Chart(document.getElementById('graficoFraldas'), {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(dadosFraldas),
-                    datasets: [{
-                        data: Object.values(dadosFraldas),
-                        backgroundColor: ['#f472b6', '#db2777', '#be185d', '#701a75'],
-                        borderWidth: 2
-                    }]
-                },
-                options: { 
-                    responsive: true,
-                    plugins: { 
-                        legend: { position: 'bottom' },
-                        title: { display: true, text: 'Resumo de Fraldas' }
-                    }
-                }
-            });
+        let offsetLogs = 10;
+        function carregarMaisAcessos() {
+            const btn = document.getElementById("btnVerMais");
+            const corpoLogs = document.getElementById("corpoLogs");
+            btn.innerText = "Carregando...";
+            fetch(`/admin/api/logs?offset=${offsetLogs}`)
+                .then(res => res.json())
+                .then(dados => {
+                    if (dados.length === 0) { btn.innerText = "Fim dos registros"; btn.disabled = true; return; }
+                    dados.forEach(log => {
+                        const tr = document.createElement("tr");
+                        tr.style.borderBottom = "1px solid #f1f5f9";
+                        tr.innerHTML = `<td style="padding: 10px; color: #94a3b8;">${log.timestamp}</td><td style="padding: 10px; font-weight: bold;">${log.usuario}</td><td style="padding: 10px; color: #db2777;">${log.endpoint}</td><td style="padding: 10px; color: #64748b;"><code>${log.ip}</code></td>`;
+                        corpoLogs.appendChild(tr);
+                    });
+                    offsetLogs += 10;
+                    btn.innerText = "Clique para ver mais ⬇️";
+                });
         }
+
+        const dadosFraldas = {{ fraldas | tojson }};
+        new Chart(document.getElementById('graficoFraldas'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(dadosFraldas),
+                datasets: [{ data: Object.values(dadosFraldas), backgroundColor: ['#f472b6', '#db2777', '#be185d', '#701a75'] }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
     </script>
 </body>
 </html>
