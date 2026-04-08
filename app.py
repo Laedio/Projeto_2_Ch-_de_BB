@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
-# Certifique-se que 'ler_logs_seguranca' existe no seu database.py
+from functools import wraps
 from database import inicializar_banco, ler_confirmacoes, excluir_confirmacao, conectar_banco, registrar_log, gerar_novo_convite, ler_logs_seguranca
 
 load_dotenv()
@@ -12,8 +12,25 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 SENHA_ADMIN = os.getenv("SENHA_ADMIN")
 
+# Configurações de Segurança de Sessão
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=1800  # Desloga após 30 min de inatividade
+)
+
 # Inicializa o banco de dados
 inicializar_banco()
+
+# --- DECORADOR DE PROTEÇÃO ---
+def login_obrigatorio(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logado'):
+            flash("Acesso restrito! Por favor, faça login.")
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route("/")
 def index():
@@ -83,18 +100,16 @@ def sucesso():
 def login():
     if request.method == 'POST':
         if request.form.get('senha') == SENHA_ADMIN:
+            session.permanent = True  # Ativa o tempo de expiração configurado
             session['logado'] = True
-            return redirect('/admin')
+            return redirect(url_for('admin'))
         return render_template('login.html', erro="Senha incorreta!")
     return render_template('login.html')
 
 @app.route("/admin")
+@login_obrigatorio
 def admin():
-    if not session.get('logado'): return redirect('/login') 
-    
     dados = ler_confirmacoes()
-    
-    # Pegamos todos e fatiamos os 10 primeiros para o carregamento inicial
     todos_logs = ler_logs_seguranca()
     logs_iniciais = todos_logs[:10] 
 
@@ -108,23 +123,18 @@ def admin():
                 
     return render_template("admin.html", convidados=dados, sim=confirmados_sim, nao=confirmados_nao, fraldas=resumo_fraldas, logs=logs_iniciais)
 
-# ROTA DA API (Deve ficar ANTES do __main__)
 @app.route("/admin/api/logs")
+@login_obrigatorio
 def api_logs():
-    if not session.get('logado'): 
-        return jsonify([]), 401
-    
     offset = int(request.args.get('offset', 0))
     limite = 10
-    
     todos_logs = ler_logs_seguranca()
     fatia = todos_logs[offset : offset + limite]
-    
     return jsonify(fatia)
 
 @app.route("/admin/gerar_link", methods=["POST"])
+@login_obrigatorio
 def admin_gerar_link():
-    if not session.get('logado'): return redirect('/login')
     nome = request.form.get("nome_novo_convidado")
     if nome:
         token = gerar_novo_convite(nome)
@@ -137,14 +147,15 @@ def logout():
     return redirect(url_for('login'))
 
 @app.route("/download")
+@login_obrigatorio
 def download():
-    if not session.get('logado'): return redirect('/login')
     dados = ler_confirmacoes()
     if not dados: return "Nenhuma confirmação encontrada.", 404
     df = pd.DataFrame(dados)
     colunas_organizas = {'nome': 'Nome do Convidado', 'presenca': 'Confirmou?', 'fralda': 'Tamanho da Fralda', 'data': 'Data da Resposta'}
     df = df[list(colunas_organizas.keys())].rename(columns=colunas_organizas)
     total_confirmados = len(df[df['Confirmou?'].str.contains('Sim', case=False, na=False)])
+    
     caminho_arquivo = "confirmacoes.xlsx"
     with pd.ExcelWriter(caminho_arquivo, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='Convidados')
@@ -152,20 +163,23 @@ def download():
         header_fmt = workbook.add_format({'bold': True, 'align': 'center', 'fg_color': '#F5D5DA', 'border': 1})
         cell_fmt = workbook.add_format({'align': 'center', 'border': 1})
         total_fmt = workbook.add_format({'bold': True, 'font_color': 'green', 'align': 'right'})
+        
         for col_num, value in enumerate(df.columns.values):
             worksheet.write(0, col_num, value, header_fmt)
             worksheet.set_column(col_num, col_num, 25)
         for row_num in range(1, len(df) + 1):
             for col_num in range(len(df.columns)):
                 worksheet.write(row_num, col_num, df.iloc[row_num-1, col_num], cell_fmt)
+        
         row_final = len(df) + 2
         worksheet.write(row_final, 0, "Total de Confirmados (Sim):", total_fmt)
         worksheet.write(row_final, 1, total_confirmados, cell_fmt)
+        
     return send_file(caminho_arquivo, as_attachment=True)
 
 @app.route("/excluir/<nome>")
+@login_obrigatorio
 def excluir(nome):
-    if not session.get('logado'): return redirect('/login')
     excluir_confirmacao(nome)
     return redirect(url_for('admin'))
 
