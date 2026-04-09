@@ -15,9 +15,11 @@ SENHA_ADMIN = os.getenv("SENHA_ADMIN")
 # Configurações de Segurança de Sessão
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='Lax',
-    PERMANENT_SESSION_LIFETIME=1800  # Desloga após 30 min de inatividade
+    SESSION_COOKIE_SAMESITE=None,   # Permite que o iPhone aceite o cookie via IP (sem HTTPS)
+    SESSION_COOKIE_SECURE=False,    # Necessário para redes locais/Wi-Fi
+    PERMANENT_SESSION_LIFETIME=1800
 )
+# ------------------------------------------------------
 
 # Inicializa o banco de dados
 inicializar_banco()
@@ -184,4 +186,4 @@ def excluir(nome):
     return redirect(url_for('admin'))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

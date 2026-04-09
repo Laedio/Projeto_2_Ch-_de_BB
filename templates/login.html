@@ -2,23 +2,292 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Admin</title>
-</head>
-<body style="background-color: #f9fafb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
-    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 300px; text-align: center;">
-        <h2 style="color: #db2777;">Acesso Restrito</h2>
-        
-        {% if erro %}
-            <p style="color: red; font-size: 0.8rem;">{{ erro }}</p>
-        {% endif %}
+    <!-- viewport obrigatório para mobile não encolher -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - Admin Ayla</title>
 
-        <form action="/login" method="POST">
-            <input type="password" name="senha" placeholder="Digite a senha" required 
-                   style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
-            <button type="submit" style="width: 100%; padding: 10px; background: #db2777; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                Entrar no Painel
-            </button>
-        </form>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ---- Reset ---- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --pink:       #db2777;
+            --pink-dark:  #be185d;
+            --pink-pale:  #fff5f8;
+            --pink-blush: #fce7f3;
+            --gold:       #c9a84c;
+            --gold-light: #f0dfa8;
+            --text:       #3a1e2e;
+            --text-light: #9d7a88;
+            --border:     #f0c8d8;
+            --radius:     18px;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            /* Gradiente suave combinando com o convite */
+            background: linear-gradient(145deg, #fdf0f3 0%, #fdf5ee 100%);
+            /* Bolinhas douradas sutis */
+            background-image:
+                linear-gradient(145deg, #fdf0f3 0%, #fdf5ee 100%),
+                radial-gradient(circle, #e8d48a 1px, transparent 1px);
+            background-size: auto, 32px 32px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* ---- Card ---- */
+        .login-card {
+            background: white;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 28px;
+            box-shadow:
+                0 20px 60px rgba(219, 39, 119, 0.14),
+                0 4px 16px rgba(0,0,0,0.06);
+            overflow: hidden;
+            animation: cardReveal 0.7s cubic-bezier(0.4,0,0.2,1) both;
+        }
+
+        /* Faixa decorativa no topo */
+        .login-header {
+            background: linear-gradient(135deg, #fce4ea 0%, #fdf5f0 100%);
+            padding: 32px 28px 24px;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid var(--pink-blush);
+        }
+
+        .login-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold-light), var(--gold), var(--gold-light), transparent);
+        }
+
+        .laco-svg {
+            width: 56px;
+            margin-bottom: 14px;
+            filter: drop-shadow(0 4px 10px rgba(219,39,119,0.25));
+        }
+
+        .login-titulo {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--pink);
+            margin-bottom: 4px;
+        }
+
+        .login-subtitulo {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+        }
+
+        /* ---- Corpo do form ---- */
+        .login-body {
+            padding: 28px 28px 32px;
+        }
+
+        /* Mensagem de erro */
+        .erro-msg {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: #b91c1c;
+            margin-bottom: 18px;
+            animation: shakeX 0.4s ease;
+        }
+
+        /* ---- Label ---- */
+        .campo-label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--pink);
+            margin-bottom: 8px;
+        }
+
+        /* ---- Input senha ----
+           CORREÇÃO PRINCIPAL: padding generoso + font-size 16px
+           (abaixo de 16px o iOS faz zoom automático — muito ruim)
+        ---- */
+        .input-senha {
+            width: 100%;
+            padding: 16px 18px;           /* área de toque ampla */
+            font-size: 1rem;              /* 16px — evita zoom no iOS */
+            font-family: 'Nunito', sans-serif;
+            color: var(--text);
+            background: var(--pink-pale);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+            /* Garante que não vaze */
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-senha:focus {
+            border-color: var(--pink);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(219,39,119,0.12);
+        }
+
+        /* Wrapper para ícone de olho (futuro) */
+        .input-wrap {
+            position: relative;
+            margin-bottom: 22px;
+        }
+
+        /* ---- Botão entrar ---- */
+        .btn-entrar {
+            width: 100%;
+            padding: 17px;               /* grande o suficiente para o polegar */
+            font-size: 0.9rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: white;
+            background: linear-gradient(135deg, var(--pink) 0%, var(--pink-dark) 100%);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            min-height: 54px;            /* área de toque confortável */
+            box-shadow:
+                0 8px 24px rgba(219,39,119,0.28),
+                0 2px 8px rgba(219,39,119,0.14);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Brilho no hover */
+        .btn-entrar::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .btn-entrar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 36px rgba(219,39,119,0.32);
+        }
+        .btn-entrar:hover::before { opacity: 1; }
+        .btn-entrar:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(219,39,119,0.22);
+        }
+
+        /* ---- Rodapé do card ---- */
+        .login-footer {
+            text-align: center;
+            padding: 0 28px 24px;
+        }
+
+        .login-footer p {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        /* ---- Animações ---- */
+        @keyframes cardReveal {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes shakeX {
+            0%,100% { transform: translateX(0); }
+            20%,60% { transform: translateX(-6px); }
+            40%,80% { transform: translateX(6px); }
+        }
+
+        /* Telas muito pequenas — garantia extra */
+        @media (max-width: 360px) {
+            .login-card { border-radius: 20px; }
+            .login-header { padding: 24px 20px 18px; }
+            .login-body   { padding: 20px 20px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+
+        <!-- Header decorativo -->
+        <div class="login-header">
+            <!-- Laço SVG inline (sem imagem externa) -->
+            <svg class="laco-svg" viewBox="0 0 130 88" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M65 44C55 33 22 12 8 23 0 31 12 49 32 45 47 42 57 41 65 44Z" fill="#e8829a"/>
+                <path d="M65 44C55 33 24 16 12 25 5 33 16 47 34 44 49 41 58 42 65 44Z" fill="#f0a0b4"/>
+                <path d="M65 44C75 33 108 12 122 23 130 31 118 49 98 45 83 42 73 41 65 44Z" fill="#e8829a"/>
+                <path d="M65 44C75 33 106 16 118 25 125 33 114 47 96 44 81 41 72 42 65 44Z" fill="#f0a0b4"/>
+                <ellipse cx="65" cy="44" rx="11" ry="9" fill="#d4607a"/>
+                <ellipse cx="65" cy="43" rx="7.5" ry="5.5" fill="#e8829a"/>
+                <path d="M58 51 Q52 64 48 76" stroke="#e8829a" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+                <path d="M72 51 Q78 64 82 76" stroke="#e8829a" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+                <path d="M28 30 Q36 25 40 33" stroke="rgba(255,255,255,0.45)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+                <path d="M102 30 Q94 25 90 33" stroke="rgba(255,255,255,0.45)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            </svg>
+
+            <h2 class="login-titulo">Acesso Restrito</h2>
+            <p class="login-subtitulo">Painel Administrativo · Ayla Maria 🎀</p>
+        </div>
+
+        <!-- Formulário -->
+        <div class="login-body">
+
+            {% if erro %}
+                <div class="erro-msg">
+                    <span>⚠️</span>
+                    <span>{{ erro }}</span>
+                </div>
+            {% endif %}
+
+            <form action="/login" method="POST">
+                <label class="campo-label" for="senha">Senha de Acesso</label>
+                <div class="input-wrap">
+                    <input
+                        class="input-senha"
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Digite a senha"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <button type="submit" class="btn-entrar">
+                    🔐 Entrar no Painel
+                </button>
+            </form>
+
+        </div>
+
+        <!-- Rodapé -->
+        <div class="login-footer">
+            <p>Acesso exclusivo para administradores</p>
+        </div>
+
     </div>
+
 </body>
 </html>

@@ -14,6 +14,9 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
+        /* ============================================
+           TOKENS
+        ============================================ */
         :root {
             --rose-deep:   #8b3a52;
             --rose-mid:    #c4687c;
@@ -22,7 +25,6 @@
             --rose-blush:  #f5d5da;
             --rose-pale:   #fce8ec;
             --rose-bg:     #fdf2f4;
-            --peach:       #fdf0ee;
             --gold:        #c9a84c;
             --gold-light:  #e8d48a;
             --wine:        #7a2d45;
@@ -31,7 +33,13 @@
             --text-light:  #b08a95;
             --white:       #fffcfd;
             --radius:      22px;
-            --ease:        all 0.35s cubic-bezier(0.4,0,0.2,1);
+            --ease:        all 0.28s cubic-bezier(0.4,0,0.2,1);
+
+            /* Glassmorphism */
+            --glass-bg:     rgba(255, 252, 253, 0.72);
+            --glass-border: rgba(245, 213, 218, 0.55);
+            --glass-blur:   blur(14px);
+            --glass-shadow: 0 8px 32px rgba(139,58,82,0.1), inset 0 1px 0 rgba(255,255,255,0.65);
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -44,89 +52,82 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
+            overflow-x: hidden;
+            width: 100%;
         }
 
-        /* ---- Layout ---- */
+        /* ============================================
+           LAYOUT
+        ============================================ */
         .container {
             width: 100%;
+            max-width: 100%;
             background: var(--white);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            animation: pageReveal 1s ease both;
+            animation: pageReveal 0.9s ease both;
         }
 
-        @media (max-width: 599px) { .container { max-width: 100%; border-radius: 0; } }
+        @media (max-width: 599px)  { .container { border-radius: 0; } }
 
         @media (min-width: 600px) and (max-width: 1024px) {
             body { padding: 28px 20px; }
-            .container { max-width: 560px; min-height: auto; border-radius: 36px; margin-bottom: 28px;
-                box-shadow: 0 20px 70px rgba(139,58,82,0.18), 0 6px 20px rgba(139,58,82,0.08); }
+            .container {
+                max-width: 560px; min-height: auto; border-radius: 36px; margin-bottom: 28px;
+                box-shadow: 0 20px 70px rgba(139,58,82,0.18), 0 6px 20px rgba(139,58,82,0.08);
+            }
         }
 
         @media (min-width: 1025px) {
             body { padding: 48px 20px; }
-            .container { max-width: 500px; min-height: auto; border-radius: 36px; margin-bottom: 48px;
-                box-shadow: 0 28px 90px rgba(139,58,82,0.2), 0 8px 28px rgba(139,58,82,0.1); }
+            .container {
+                max-width: 500px; min-height: auto; border-radius: 36px; margin-bottom: 48px;
+                box-shadow: 0 28px 90px rgba(139,58,82,0.2), 0 8px 28px rgba(139,58,82,0.1);
+            }
         }
 
         /* ============================================
            HEADER
         ============================================ */
         .topo-convite {
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
             background: linear-gradient(175deg, #fce4ea 0%, #fdf5f0 55%, #fdf0f4 100%);
             padding-bottom: 40px;
         }
 
-        /* Bolinhas douradas */
         .confetes { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-        .confetes span {
-            position: absolute; border-radius: 50%;
-            background: var(--gold-light); opacity: 0.6;
-        }
+        .confetes span { position: absolute; border-radius: 50%; background: var(--gold-light); opacity: 0.6; }
 
-        /* Círculo rosa grande */
         .circulo-fundo {
             position: absolute;
-            width: 72%;
-            padding-bottom: 72%;
-            background: var(--rose-circle);
-            border-radius: 50%;
+            width: 72%; padding-bottom: 72%;
+            background: var(--rose-circle); border-radius: 50%;
             top: 48%; left: 50%;
             transform: translate(-50%, -36%);
-            z-index: 1;
-            opacity: 0.8;
+            z-index: 1; opacity: 0.8;
         }
 
-        /* Nuvens */
         .nuvem { position: absolute; z-index: 2; pointer-events: none; }
         .nuvem-esq { left: -12px; top: 50%; width: 130px; opacity: 0.92; }
         .nuvem-dir { right: -12px; top: 40%; width: 110px; opacity: 0.88; }
 
-        /* Borboletas */
         .borboleta { position: absolute; z-index: 3; pointer-events: none; animation: flutter 4s ease-in-out infinite; }
         .b1 { top: 7%;  left: 7%;  width: 36px; animation-delay: 0s; }
         .b2 { top: 12%; right: 9%; width: 30px; animation-delay: 0.9s; }
         .b3 { top: 35%; right: 5%; width: 24px; animation-delay: 1.6s; }
         .b4 { top: 65%; left: 4%; width: 22px; animation-delay: 2.3s; }
 
-        /* Ursinho */
         .ursinho-wrap {
-            position: absolute;
-            left: -6px; top: 36%;
-            width: 128px; z-index: 4;
-            pointer-events: none;
+            position: absolute; left: -6px; top: 36%;
+            width: 128px; z-index: 4; pointer-events: none;
             animation: bearFloat 5s ease-in-out infinite;
         }
 
-        /* Conteúdo textual */
         .topo-inner {
             position: relative; z-index: 5;
-            padding: 22px 24px 0;
-            text-align: center;
+            padding: 22px 24px 0; text-align: center;
             display: flex; flex-direction: column; align-items: center;
         }
 
@@ -137,141 +138,95 @@
         }
 
         .titulo-cha-label {
-            font-family: 'Cormorant Garamond', serif;
-            font-style: italic;
+            font-family: 'Cormorant Garamond', serif; font-style: italic;
             font-size: clamp(1.3rem, 4.5vw, 1.65rem);
-            color: white;
-            letter-spacing: 4px;
+            color: white; letter-spacing: 4px;
             text-shadow: 0 2px 8px rgba(122,45,69,0.22);
             animation: floatIn 0.9s 0.45s both;
         }
 
         .titulo-da {
-            font-family: 'Cormorant Garamond', serif;
-            font-style: italic;
+            font-family: 'Cormorant Garamond', serif; font-style: italic;
             font-size: clamp(1rem, 3vw, 1.2rem);
-            color: rgba(255,255,255,0.85);
-            letter-spacing: 2px;
+            color: rgba(255,255,255,0.85); letter-spacing: 2px;
             animation: floatIn 0.9s 0.55s both;
         }
 
         .nome-bebe {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
+            font-family: 'Playfair Display', serif; font-weight: 700;
             font-size: clamp(2.1rem, 8.5vw, 3.1rem);
-            color: var(--wine);
-            letter-spacing: 2px;
-            display: block;
-            margin: 8px 0 0;
+            color: var(--wine); letter-spacing: 2px;
+            display: block; margin: 8px 0 0;
             text-shadow: 0 2px 12px rgba(122,45,69,0.18);
             animation: floatIn 0.9s 0.65s both;
         }
 
-        .divisor {
-            display: flex; align-items: center; gap: 10px;
-            margin: 18px auto 0; width: 65%;
-            animation: floatIn 0.9s 0.72s both;
-        }
+        .divisor { display: flex; align-items: center; gap: 10px; margin: 18px auto 0; width: 65%; animation: floatIn 0.9s 0.72s both; }
         .div-linha { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--rose-dusty)); }
         .div-linha.r { background: linear-gradient(90deg, var(--rose-dusty), transparent); }
         .div-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--rose-dusty); }
 
         .mensagem-convite {
-            font-family: 'Cormorant Garamond', serif;
-            font-style: italic;
+            font-family: 'Cormorant Garamond', serif; font-style: italic;
             font-size: clamp(1rem, 3.2vw, 1.13rem);
-            color: var(--text-mid);
-            line-height: 1.85;
+            color: var(--text-mid); line-height: 1.85;
             max-width: 82%; margin: 20px auto 0;
             animation: floatIn 0.9s 0.8s both;
         }
 
         /* ============================================
-           CARDS
+           CARDS COM GLASSMORPHISM
+           Aplicado em todos os blocos de detalhes
         ============================================ */
         .detalhes { padding: 4px 0 0; }
 
-        .bloco-data {
-            margin: 18px 20px 0;
-            padding: 22px 24px;
-            background: linear-gradient(135deg, var(--rose-pale), #fff5f7);
+        /* Base glass — reutilizada em todos os cards */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
             border-radius: var(--radius);
-            border: 1px solid var(--rose-blush);
-            text-align: center;
-            animation: slideUp 0.7s 0.55s both;
+            transition: var(--ease);
         }
 
-        .data-mes-row {
-            display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 6px;
+        .glass-card:hover {
+            box-shadow:
+                0 16px 48px rgba(139,58,82,0.14),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            transform: translateY(-2px);
         }
+
+        /* Entrada escalonada dos cards */
+        .bloco-data    { margin: 18px 20px 0; padding: 22px 24px; text-align: center; animation: slideUp 0.65s 0.55s both; }
+        .bloco-presente{ margin: 12px 20px 0; padding: 20px 24px; text-align: center; animation: slideUp 0.65s 0.65s both; }
+        .bloco-mapa    { margin: 12px 20px 0; padding: 20px 24px; animation: slideUp 0.65s 0.75s both; overflow: hidden; }
+
+        /* Gradiente sutil por card */
+        .bloco-data     { background: linear-gradient(135deg, rgba(252,232,236,0.75), rgba(255,245,247,0.7)); }
+        .bloco-presente { background: linear-gradient(135deg, rgba(255,248,240,0.75), rgba(253,245,234,0.7)); border-color: rgba(240,223,192,0.5); }
+
+        .data-mes-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 6px; }
         .data-mes-linha { flex: 1; max-width: 50px; height: 1.5px; background: var(--rose-dusty); }
-        .data-mes-label {
-            font-family: 'Playfair Display', serif;
-            font-style: italic; font-size: 1.3rem; color: var(--rose-mid);
-        }
+        .data-mes-label { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.3rem; color: var(--rose-mid); }
 
-        .data-nums {
-            display: flex; align-items: baseline; justify-content: center; gap: 12px;
-        }
-        .data-diaSemana {
-            font-size: 1rem; font-weight: 700; color: var(--text-dark);
-            text-decoration: underline; text-underline-offset: 3px;
-        }
-        .data-diaNum {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.8rem; font-weight: 700; color: var(--wine); line-height: 1;
-        }
-        .data-hora-label {
-            font-size: 1.25rem; font-weight: 700; color: var(--text-dark); letter-spacing: 2px;
-        }
-        .data-extenso {
-            font-size: 0.82rem; color: var(--text-light); margin-top: 4px; letter-spacing: 0.5px;
-        }
+        .data-nums { display: flex; align-items: baseline; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .data-diaSemana { font-size: 1rem; font-weight: 700; color: var(--text-dark); text-decoration: underline; text-underline-offset: 3px; }
+        .data-diaNum { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: var(--wine); line-height: 1; }
+        .data-hora-label { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); letter-spacing: 2px; }
+        .data-extenso { font-size: 0.82rem; color: var(--text-light); margin-top: 4px; letter-spacing: 0.5px; }
 
-        .bloco-presente {
-            margin: 12px 20px 0;
-            padding: 20px 24px;
-            background: linear-gradient(135deg, #fff8f0, #fdf5ea);
-            border-radius: var(--radius);
-            border: 1px solid #f0dfc0;
-            text-align: center;
-            animation: slideUp 0.7s 0.65s both;
-        }
+        .presente-titulo { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gold); font-weight: 700; margin-bottom: 9px; }
+        .presente-linha { font-size: 0.85rem; color: var(--wine); font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; line-height: 1.9; }
+        .presente-mimo { font-size: 0.82rem; color: #9a7040; margin-top: 7px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
 
-        .presente-titulo {
-            font-family: 'Playfair Display', serif;
-            font-size: 1rem; color: var(--gold); font-weight: 700; margin-bottom: 9px;
-        }
-        .presente-linha {
-            font-size: 0.85rem; color: var(--wine); font-weight: 700;
-            letter-spacing: 1.2px; text-transform: uppercase; line-height: 1.9;
-        }
-        .presente-mimo {
-            font-size: 0.82rem; color: #9a7040; margin-top: 7px;
-            font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;
-        }
-
-        .bloco-mapa {
-            margin: 12px 20px 0;
-            padding: 20px 24px;
-            background: var(--white);
-            border-radius: var(--radius);
-            border: 1px solid var(--rose-blush);
-            box-shadow: 0 2px 14px rgba(139,58,82,0.05);
-            animation: slideUp 0.7s 0.75s both;
-        }
-
-        .local-titulo {
-            display: flex; align-items: center; gap: 7px;
-            font-family: 'Playfair Display', serif;
-            font-size: 1rem; color: var(--rose-deep); font-weight: 700; margin-bottom: 5px;
-        }
+        .local-titulo { display: flex; align-items: center; gap: 7px; font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--rose-deep); font-weight: 700; margin-bottom: 5px; }
         .local-end { font-size: 0.82rem; color: var(--text-light); margin-bottom: 14px; line-height: 1.6; }
 
         #mapa {
             height: 220px; width: 100%;
-            border-radius: 15px;
-            border: 1px solid var(--rose-blush);
+            border-radius: 15px; border: 1px solid rgba(245,213,218,0.5);
             margin-bottom: 14px; overflow: hidden; z-index: 1;
         }
 
@@ -279,25 +234,36 @@
 
         .btn-rota {
             display: flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 11px 12px; border-radius: 12px;
-            text-decoration: none; font-size: 0.72rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 1px; color: white;
+            padding: 12px; border-radius: 12px; text-decoration: none;
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: white; min-height: 46px;
             transition: var(--ease);
+            position: relative; overflow: hidden;
         }
-        .btn-rota:hover { transform: scale(1.03); filter: brightness(1.08); }
+
+        /* Brilho no hover dos botões de rota */
+        .btn-rota::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            opacity: 0; transition: opacity 0.25s;
+        }
+        .btn-rota:hover { transform: scale(1.04) translateY(-1px); filter: brightness(1.1); }
+        .btn-rota:hover::before { opacity: 1; }
+        .btn-rota:active { transform: scale(0.98); }
         .btn-google { background: linear-gradient(135deg, #4285F4, #2563eb); }
         .btn-waze   { background: linear-gradient(135deg, #33ccff, #0284c7); }
 
-        /* Countdown */
+        /* ============================================
+           COUNTDOWN com glass
+        ============================================ */
         .countdown-wrap {
-            margin: 12px 20px 0;
-            padding: 24px;
+            margin: 12px 20px 0; padding: 24px 16px;
             border-radius: var(--radius);
             background: linear-gradient(135deg, var(--rose-deep) 0%, var(--wine) 100%);
             box-shadow: 0 8px 32px rgba(139,58,82,0.28);
-            text-align: center;
-            position: relative; overflow: hidden;
-            animation: slideUp 0.7s 0.85s both;
+            text-align: center; position: relative; overflow: hidden;
+            animation: slideUp 0.65s 0.85s both;
         }
         .countdown-wrap::before {
             content: ''; position: absolute; inset: 0;
@@ -311,32 +277,48 @@
 
         .countdown-label {
             position: relative; z-index: 1;
-            font-family: 'Cormorant Garamond', serif;
-            font-style: italic; font-size: 1.05rem;
+            font-family: 'Cormorant Garamond', serif; font-style: italic;
+            font-size: clamp(0.88rem, 3.5vw, 1.05rem);
             color: rgba(255,255,255,0.85); margin-bottom: 16px;
         }
+
         .countdown-blocos {
             position: relative; z-index: 1;
-            display: flex; justify-content: center; align-items: flex-start; gap: 8px;
+            display: flex; justify-content: center; align-items: flex-start;
+            gap: clamp(4px, 2vw, 10px); width: 100%;
         }
+
         .bloco-tempo {
             display: flex; flex-direction: column; align-items: center;
-            background: rgba(255,255,255,0.14);
-            border: 1px solid rgba(255,255,255,0.22);
-            border-radius: 14px; padding: 10px 12px; min-width: 54px;
+            background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22);
+            border-radius: 12px;
+            padding: clamp(6px, 2vw, 10px) clamp(6px, 2.5vw, 12px);
+            min-width: 0; flex: 1; max-width: 72px;
+            /* Micro-interação: hover no bloco de tempo */
+            transition: background 0.25s, transform 0.25s;
         }
+        .bloco-tempo:hover {
+            background: rgba(255,255,255,0.22);
+            transform: translateY(-2px);
+        }
+
         .bloco-tempo .num {
             font-family: 'Playfair Display', serif;
-            font-size: 1.9rem; color: white; line-height: 1; min-width: 2ch; text-align: center;
+            font-size: clamp(1.3rem, 5.5vw, 1.9rem);
+            color: white; line-height: 1; text-align: center; width: 100%;
         }
+
         .bloco-tempo .leg {
-            font-size: 0.58rem; font-weight: 700; letter-spacing: 1.5px;
-            text-transform: uppercase; color: rgba(255,255,255,0.58); margin-top: 4px;
+            font-size: clamp(0.5rem, 1.8vw, 0.58rem);
+            font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+            color: rgba(255,255,255,0.58); margin-top: 4px; white-space: nowrap;
         }
+
         .sep-tempo {
             font-family: 'Playfair Display', serif;
-            font-size: 1.7rem; color: rgba(255,255,255,0.35);
-            align-self: flex-start; margin-top: 10px; line-height: 1;
+            font-size: clamp(1.2rem, 4vw, 1.7rem);
+            color: rgba(255,255,255,0.35); align-self: flex-start;
+            margin-top: clamp(6px, 2vw, 10px); line-height: 1; flex-shrink: 0;
         }
 
         /* ============================================
@@ -345,37 +327,42 @@
         .formulario-sessao { padding: 32px 20px 52px; }
 
         .form-titulo { text-align: center; margin-bottom: 26px; }
-        .form-titulo h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem; color: var(--text-dark); margin-bottom: 5px;
-        }
+        .form-titulo h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-dark); margin-bottom: 5px; }
         .form-titulo .nome-destaque { color: var(--rose-deep); font-style: italic; }
-        .form-titulo p { font-size: 0.85rem; color: var(--text-light); }
+        .form-titulo p { font-size: 0.88rem; color: var(--text-light); }
 
         .campo-grupo { margin-bottom: 16px; }
 
         .campo-label {
-            display: block; font-size: 0.68rem; font-weight: 700;
+            display: block; font-size: 0.7rem; font-weight: 700;
             letter-spacing: 2px; text-transform: uppercase;
             color: var(--rose-deep); margin-bottom: 7px; padding-left: 2px;
         }
 
+        /* 16px — sem zoom automático no iOS */
         input, select {
-            width: 100%; padding: 14px 18px;
+            width: 100%; padding: 15px 18px;
             border: 1.5px solid var(--rose-blush);
             border-radius: 14px;
-            background: var(--rose-bg);
-            font-size: 0.95rem; font-family: 'Nunito', sans-serif;
-            color: var(--text-dark); transition: var(--ease);
+            background: rgba(253,242,244,0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            font-size: 1rem;
+            font-family: 'Nunito', sans-serif;
+            color: var(--text-dark);
+            transition: var(--ease);
             appearance: none; -webkit-appearance: none; outline: none;
+            max-width: 100%;
         }
+
         input:focus, select:focus {
             border-color: var(--rose-dusty); background: white;
-            box-shadow: 0 0 0 3px rgba(196,104,124,0.12);
+            box-shadow: 0 0 0 3px rgba(196,104,124,0.14);
         }
+
         input:disabled {
-            background: #f5eef0; color: var(--text-light);
-            border-color: var(--rose-blush); cursor: not-allowed;
+            background: rgba(245,238,240,0.7); color: var(--text-light);
+            border-color: var(--rose-blush); cursor: not-allowed; opacity: 0.85;
         }
 
         .select-wrap { position: relative; }
@@ -383,74 +370,87 @@
             content: ''; position: absolute; right: 16px; top: 50%;
             transform: translateY(-50%);
             width: 0; height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 6px solid var(--rose-dusty);
-            pointer-events: none;
+            border-left: 5px solid transparent; border-right: 5px solid transparent;
+            border-top: 6px solid var(--rose-dusty); pointer-events: none;
         }
 
+        /* Glass na seção de presente/fralda */
         .secao-detalhes-presente {
             display: none;
-            background: linear-gradient(135deg, var(--rose-pale), #fff8fa);
+            background: linear-gradient(135deg, rgba(252,232,236,0.65), rgba(255,248,250,0.7));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             padding: 20px; border-radius: 18px;
-            border: 1.5px solid var(--rose-blush);
+            border: 1.5px solid rgba(245,213,218,0.55);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
             margin-bottom: 16px;
             animation: expandIn 0.4s cubic-bezier(0.4,0,0.2,1);
         }
 
         .secao-titulo {
             display: flex; align-items: center; gap: 8px;
-            font-family: 'Cormorant Garamond', serif;
-            font-style: italic; font-size: 1rem;
-            color: var(--rose-deep); margin-bottom: 16px;
+            font-family: 'Cormorant Garamond', serif; font-style: italic;
+            font-size: 1rem; color: var(--rose-deep); margin-bottom: 16px;
         }
 
+        /* Botão confirmar com micro-interação completa */
         .btn-confirmar {
             width: 100%; padding: 17px; border: none; border-radius: 16px;
             background: linear-gradient(135deg, var(--rose-mid) 0%, var(--rose-deep) 100%);
             color: white; font-family: 'Nunito', sans-serif;
-            font-size: 0.85rem; font-weight: 700; letter-spacing: 2.5px;
+            font-size: 0.95rem; font-weight: 700; letter-spacing: 2.5px;
             text-transform: uppercase; cursor: pointer; margin-top: 8px;
+            min-height: 54px;
             box-shadow: 0 8px 28px rgba(139,58,82,0.28), 0 2px 8px rgba(139,58,82,0.14);
             transition: var(--ease); position: relative; overflow: hidden;
         }
+
+        /* Camada de brilho */
         .btn-confirmar::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent);
-            opacity: 0; transition: opacity 0.3s;
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            opacity: 0; transition: opacity 0.25s;
         }
-        .btn-confirmar:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(139,58,82,0.35); }
+
+        /* Efeito ripple no clique */
+        .btn-confirmar::after {
+            content: '';
+            position: absolute;
+            width: 0; height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease, opacity 0.5s;
+            opacity: 0;
+        }
+
+        .btn-confirmar:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 16px 44px rgba(139,58,82,0.36);
+        }
         .btn-confirmar:hover::before { opacity: 1; }
-        .btn-confirmar:active { transform: translateY(0); }
 
-        .aviso-link {
-            display: flex; flex-direction: column; align-items: center;
-            gap: 12px; padding: 28px 20px; text-align: center;
+        .btn-confirmar:active {
+            transform: translateY(0) scale(0.99);
         }
-        .aviso-icone {
-            width: 52px; height: 52px; background: var(--rose-pale); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-        }
-        .aviso-link p {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.1rem; color: var(--rose-deep); font-style: italic;
+        .btn-confirmar:active::after {
+            width: 250px; height: 250px; opacity: 0;
         }
 
-        /* Rodapé */
-        .rodape {
-            text-align: center; padding: 0 20px 36px;
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-        }
-        .rodape-linha {
-            width: 100px; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--rose-blush), transparent);
-        }
-        .rodape p {
-            font-family: 'Cormorant Garamond', serif;
-            font-style: italic; font-size: 0.88rem; color: var(--text-light);
-        }
+        .aviso-link { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 20px; text-align: center; }
+        .aviso-icone { width: 52px; height: 52px; background: var(--rose-pale); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .aviso-link p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--rose-deep); font-style: italic; }
 
-        /* Animações */
+        /* RODAPÉ */
+        .rodape { text-align: center; padding: 0 20px 36px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .rodape-linha { width: 100px; height: 1px; background: linear-gradient(90deg, transparent, var(--rose-blush), transparent); }
+        .rodape p { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.88rem; color: var(--text-light); }
+
+        /* ============================================
+           ANIMAÇÕES
+        ============================================ */
         @keyframes pageReveal { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
         @keyframes floatIn   { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         @keyframes slideUp   { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
@@ -458,10 +458,21 @@
         @keyframes flutter   { 0%,100% { transform:translateY(0) rotate(-5deg); } 50% { transform:translateY(-9px) rotate(6deg); } }
         @keyframes bearFloat { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
 
+        /* ============================================
+           MEDIA QUERIES
+        ============================================ */
         @media (max-width: 360px) {
-            .bloco-tempo { min-width: 44px; padding: 8px; }
-            .bloco-tempo .num { font-size: 1.5rem; }
-            .nome-bebe { font-size: 1.9rem; }
+            .ursinho-wrap { width: 100px; }
+            .nome-bebe { font-size: 1.85rem; }
+            .countdown-wrap { padding: 18px 10px; margin: 12px 14px 0; }
+            .bloco-tempo { border-radius: 10px; }
+            .bloco-tempo .leg { letter-spacing: 0; }
+        }
+
+        @media (max-width: 480px) {
+            .bloco-data, .bloco-presente, .bloco-mapa { margin-left: 14px; margin-right: 14px; }
+            .countdown-wrap { margin-left: 14px; margin-right: 14px; }
+            .formulario-sessao { padding: 28px 14px 48px; }
         }
 
         @media (min-width: 600px) {
@@ -474,10 +485,7 @@
 
 <main class="container">
 
-    <!-- HEADER -->
     <header class="topo-convite">
-
-        <!-- Bolinhas douradas -->
         <div class="confetes" aria-hidden="true">
             <span style="width:7px;height:7px;top:5%;left:75%"></span>
             <span style="width:4px;height:4px;top:11%;left:83%"></span>
@@ -491,25 +499,20 @@
             <span style="width:4px;height:4px;top:22%;left:72%"></span>
         </div>
 
-        <!-- Círculo rosa -->
         <div class="circulo-fundo" aria-hidden="true"></div>
 
-        <!-- Nuvem esquerda -->
         <svg class="nuvem nuvem-esq" viewBox="0 0 160 80" fill="none" aria-hidden="true">
             <ellipse cx="80" cy="56" rx="76" ry="27" fill="white"/>
             <ellipse cx="52" cy="46" rx="38" ry="26" fill="white"/>
             <ellipse cx="96" cy="43" rx="34" ry="23" fill="white"/>
             <ellipse cx="120" cy="50" rx="28" ry="20" fill="white"/>
         </svg>
-
-        <!-- Nuvem direita -->
         <svg class="nuvem nuvem-dir" viewBox="0 0 140 70" fill="none" aria-hidden="true">
             <ellipse cx="70" cy="48" rx="65" ry="24" fill="white"/>
             <ellipse cx="46" cy="37" rx="32" ry="22" fill="white"/>
             <ellipse cx="88" cy="36" rx="30" ry="21" fill="white"/>
         </svg>
 
-        <!-- Borboleta 1 -->
         <svg class="borboleta b1" viewBox="0 0 50 34" fill="none" aria-hidden="true">
             <path d="M25 17C21 7 4 2 4 14c0 8 12 9 21 3Z" fill="#f9a8c9" opacity=".85"/>
             <path d="M25 17c4-10 21-15 21-3 0 8-12 9-21 3Z" fill="#f9a8c9" opacity=".85"/>
@@ -517,8 +520,6 @@
             <path d="M25 17c4 6 16 10 14 4-2-4-10-2-14-4Z" fill="#fbc4d8" opacity=".7"/>
             <line x1="25" y1="11" x2="25" y2="25" stroke="#e879a0" stroke-width="1.2" opacity=".55"/>
         </svg>
-
-        <!-- Borboleta 2 -->
         <svg class="borboleta b2" viewBox="0 0 46 30" fill="none" aria-hidden="true">
             <path d="M23 15C19 6 3 1 3 13c0 7 11 8 20 2Z" fill="#f9c8da" opacity=".8"/>
             <path d="M23 15c4-9 20-14 20-2 0 7-11 8-20 2Z" fill="#f9c8da" opacity=".8"/>
@@ -526,91 +527,65 @@
             <path d="M23 15c4 5 14 9 12 4-2-4-9-2-12-4Z" fill="#fbd8e6" opacity=".65"/>
             <line x1="23" y1="10" x2="23" y2="22" stroke="#e879a0" stroke-width="1" opacity=".5"/>
         </svg>
-
-        <!-- Borboleta 3 -->
         <svg class="borboleta b3" viewBox="0 0 40 27" fill="none" aria-hidden="true">
             <path d="M20 13C17 5 3 1 3 11c0 6 9 7 17 2Z" fill="#fbc4d8" opacity=".75"/>
             <path d="M20 13c3-8 17-12 17-2 0 6-9 7-17 2Z" fill="#fbc4d8" opacity=".75"/>
             <line x1="20" y1="9" x2="20" y2="19" stroke="#e879a0" stroke-width="1" opacity=".5"/>
         </svg>
-
-        <!-- Borboleta 4 -->
         <svg class="borboleta b4" viewBox="0 0 36 24" fill="none" aria-hidden="true">
             <path d="M18 12C15 5 2 1 2 9c0 6 8 6 16 3Z" fill="#f9d5e2" opacity=".7"/>
             <path d="M18 12c3-7 16-11 16-3 0 6-8 6-16 3Z" fill="#f9d5e2" opacity=".7"/>
             <line x1="18" y1="8" x2="18" y2="18" stroke="#e879a0" stroke-width="1" opacity=".45"/>
         </svg>
 
-        <!-- Ursinho com balões -->
         <div class="ursinho-wrap" aria-hidden="true">
             <svg viewBox="0 0 120 185" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Fios -->
                 <line x1="60" y1="64" x2="43" y2="22" stroke="#c4687c" stroke-width="1" opacity=".5"/>
                 <line x1="60" y1="64" x2="62" y2="12" stroke="#c4687c" stroke-width="1" opacity=".5"/>
                 <line x1="60" y1="64" x2="79" y2="20" stroke="#c4687c" stroke-width="1" opacity=".5"/>
                 <line x1="60" y1="64" x2="33" y2="30" stroke="#c4687c" stroke-width="1" opacity=".5"/>
                 <line x1="60" y1="64" x2="90" y2="32" stroke="#c4687c" stroke-width="1" opacity=".5"/>
-                <!-- Balões -->
-                <ellipse cx="43" cy="14"  rx="11" ry="13" fill="#e8a0b4"/>
-                <ellipse cx="62" cy="6"   rx="10" ry="12" fill="#f2c4ce"/>
-                <ellipse cx="79" cy="13"  rx="9"  ry="11" fill="#e8b8a0"/>
-                <ellipse cx="32" cy="23"  rx="9"  ry="10" fill="#f0c8b8"/>
-                <ellipse cx="90" cy="25"  rx="9"  ry="10" fill="#e8c8b0"/>
-                <!-- Reflexos balões -->
+                <ellipse cx="43" cy="14" rx="11" ry="13" fill="#e8a0b4"/>
+                <ellipse cx="62" cy="6"  rx="10" ry="12" fill="#f2c4ce"/>
+                <ellipse cx="79" cy="13" rx="9"  ry="11" fill="#e8b8a0"/>
+                <ellipse cx="32" cy="23" rx="9"  ry="10" fill="#f0c8b8"/>
+                <ellipse cx="90" cy="25" rx="9"  ry="10" fill="#e8c8b0"/>
                 <ellipse cx="40" cy="10" rx="3" ry="4" fill="rgba(255,255,255,0.35)"/>
                 <ellipse cx="59" cy="3"  rx="3" ry="4" fill="rgba(255,255,255,0.35)"/>
-                <!-- Corpo -->
                 <ellipse cx="60" cy="122" rx="27" ry="29" fill="#d4a882"/>
-                <!-- Barriga -->
                 <ellipse cx="60" cy="124" rx="17" ry="18" fill="#e8c4a0"/>
-                <!-- Cabeça -->
                 <circle cx="60" cy="82" r="25" fill="#d4a882"/>
-                <!-- Orelhas -->
                 <circle cx="37" cy="62" r="10" fill="#d4a882"/>
                 <circle cx="37" cy="62" r="6"  fill="#e8b898"/>
                 <circle cx="83" cy="62" r="10" fill="#d4a882"/>
                 <circle cx="83" cy="62" r="6"  fill="#e8b898"/>
-                <!-- Focinho -->
                 <ellipse cx="60" cy="91" rx="12" ry="9" fill="#c49070"/>
-                <!-- Nariz -->
                 <ellipse cx="60" cy="85" rx="4" ry="3" fill="#7a4030"/>
-                <!-- Olhos -->
                 <circle cx="51" cy="77" r="3.5" fill="#4a2818"/>
                 <circle cx="69" cy="77" r="3.5" fill="#4a2818"/>
                 <circle cx="52" cy="76" r="1.2" fill="white"/>
                 <circle cx="70" cy="76" r="1.2" fill="white"/>
-                <!-- Sorriso -->
                 <path d="M53 96 Q60 103 67 96" stroke="#7a4030" stroke-width="2" fill="none" stroke-linecap="round"/>
-                <!-- Bochechas -->
                 <ellipse cx="44" cy="91" rx="6" ry="4" fill="#f0a0b0" opacity=".5"/>
                 <ellipse cx="76" cy="91" rx="6" ry="4" fill="#f0a0b0" opacity=".5"/>
-                <!-- Bracinho esq. segurando -->
                 <ellipse cx="37" cy="114" rx="9" ry="18" fill="#d4a882" transform="rotate(-28 37 114)"/>
-                <!-- Bracinho dir. -->
                 <ellipse cx="83" cy="116" rx="8" ry="15" fill="#d4a882" transform="rotate(22 83 116)"/>
-                <!-- Roupinha -->
                 <path d="M40 130 Q60 142 80 130 L82 158 Q60 165 38 158Z" fill="#f0a0b8" opacity=".55"/>
-                <!-- Patas -->
                 <ellipse cx="47" cy="150" rx="11" ry="7" fill="#c8986a"/>
                 <ellipse cx="73" cy="150" rx="11" ry="7" fill="#c8986a"/>
             </svg>
         </div>
 
-        <!-- Conteúdo textual -->
         <div class="topo-inner">
-            <!-- Laço -->
             <svg class="laco-wrap" viewBox="0 0 130 88" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Laço decorativo">
                 <path d="M65 44C55 33 22 12 8 23 0 31 12 49 32 45 47 42 57 41 65 44Z" fill="#e8829a"/>
                 <path d="M65 44C55 33 24 16 12 25 5 33 16 47 34 44 49 41 58 42 65 44Z" fill="#f0a0b4"/>
                 <path d="M65 44C75 33 108 12 122 23 130 31 118 49 98 45 83 42 73 41 65 44Z" fill="#e8829a"/>
                 <path d="M65 44C75 33 106 16 118 25 125 33 114 47 96 44 81 41 72 42 65 44Z" fill="#f0a0b4"/>
-                <!-- Nó -->
                 <ellipse cx="65" cy="44" rx="11" ry="9" fill="#d4607a"/>
                 <ellipse cx="65" cy="43" rx="7.5" ry="5.5" fill="#e8829a"/>
-                <!-- Fitas -->
                 <path d="M58 51 Q52 64 48 76" stroke="#e8829a" stroke-width="5.5" fill="none" stroke-linecap="round"/>
                 <path d="M72 51 Q78 64 82 76" stroke="#e8829a" stroke-width="5.5" fill="none" stroke-linecap="round"/>
-                <!-- Reflexos -->
                 <path d="M28 30 Q36 25 40 33" stroke="rgba(255,255,255,0.45)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
                 <path d="M102 30 Q94 25 90 33" stroke="rgba(255,255,255,0.45)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
             </svg>
@@ -633,11 +608,9 @@
         </div>
     </header>
 
-    <!-- DETALHES -->
     <section class="detalhes">
 
-        <!-- Data -->
-        <div class="bloco-data">
+        <div class="bloco-data glass-card">
             <div class="data-mes-row">
                 <div class="data-mes-linha"></div>
                 <span class="data-mes-label">Fev</span>
@@ -651,15 +624,13 @@
             <p class="data-extenso">14 de fevereiro</p>
         </div>
 
-        <!-- Presente -->
-        <div class="bloco-presente">
+        <div class="bloco-presente glass-card">
             <p class="presente-titulo">🎁 Sugestão de Presente</p>
             <p class="presente-linha">Fralda P, M ou G<br>Opções: Huggies ou Pampers</p>
             <p class="presente-mimo">+ 1 mimo da sua preferência</p>
         </div>
 
-        <!-- Mapa -->
-        <div class="bloco-mapa">
+        <div class="bloco-mapa glass-card">
             <div class="local-titulo"><span>📍</span> Local do Evento</div>
             <p class="local-end">Rua Cariri, 2339 — Tabapuá, Caucaia</p>
             <div id="mapa"></div>
@@ -675,7 +646,6 @@
             </div>
         </div>
 
-        <!-- Countdown -->
         <div class="countdown-wrap">
             <p class="countdown-label">Falta pouquinho para nos vermos! 💖</p>
             <div class="countdown-blocos">
@@ -688,10 +658,8 @@
                 <div class="bloco-tempo"><span class="num" id="cd-s">00</span><span class="leg">seg</span></div>
             </div>
         </div>
-
     </section>
 
-    <!-- FORMULÁRIO -->
     <section class="formulario-sessao">
         {% if nome %}
             <div class="form-titulo">
@@ -749,7 +717,6 @@
         {% endif %}
     </section>
 
-    <!-- RODAPÉ -->
     <div class="rodape">
         <div class="rodape-linha"></div>
         <p>Com amor, família Ayla Maria 🌸</p>
@@ -759,7 +726,6 @@
 </main>
 
 <script>
-    /* ---- Lógica fralda ---- */
     function ajustarCampos() {
         const escolha = document.getElementById("presenca").value;
         const secao   = document.getElementById("secaoDetalhes");
@@ -774,7 +740,6 @@
         }
     }
 
-    /* ---- Mapa Leaflet ---- */
     var lat = -3.74018, lon = -38.620577;
     var map = L.map('mapa', { scrollWheelZoom: false }).setView([lat, lon], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
@@ -786,7 +751,6 @@
      .bindPopup("<b style='color:#8b3a52;font-family:serif'>Chá da Ayla Maria! 🎀</b>")
      .openPopup();
 
-    /* ---- Cronômetro ---- */
     const dataEvento = new Date("Feb 14, 2027 20:00:00").getTime();
     const pad = n => String(Math.max(0,n)).padStart(2,'0');
     function tick() {

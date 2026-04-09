@@ -2,183 +2,853 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Painel Administrativo - Ayla</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --pink:        #db2777;
+            --pink-dark:   #be185d;
+            --pink-deeper: #9d174d;
+            --pink-light:  #fce7f3;
+            --pink-pale:   #fff5f8;
+            --green-bg:    #ecfdf5;
+            --green-text:  #065f46;
+            --green-badge: #dcfce7;
+            --green-border:#10b981;
+            --red-bg:      #fef2f2;
+            --red-text:    #991b1b;
+            --red-badge:   #fee2e2;
+            --red-border:  #ef4444;
+            --gray-text:   #374151;
+            --gray-light:  #f9fafb;
+            --gray-border: #e5e7eb;
+            --radius:      14px;
+            --ease:        all 0.22s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        body {
+            background-color: var(--gray-light);
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--gray-text);
+            padding: 16px;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* ============================================
+           WRAPPER
+        ============================================ */
+        .painel {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 24px 20px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .painel-titulo {
+            text-align: center;
+            color: var(--pink);
+            font-size: clamp(1.2rem, 5vw, 1.6rem);
+            margin-bottom: 24px;
+            font-weight: 700;
+        }
+
+        /* ============================================
+           GERAR CONVITE
+        ============================================ */
+        .secao-gerar {
+            background: var(--pink-pale);
+            padding: 20px;
+            border-radius: var(--radius);
+            border: 1px solid #fbcfe8;
+            margin-bottom: 24px;
+        }
+        .secao-gerar h3 { color: var(--pink); margin-bottom: 14px; font-size: 1rem; }
+
+        .form-gerar { display: flex; gap: 10px; flex-wrap: wrap; }
+        .form-gerar input {
+            flex: 1; min-width: 0;
+            padding: 14px 16px;
+            border: 1px solid #ddd; border-radius: 10px;
+            font-size: 1rem; outline: none; width: 100%;
+            transition: var(--ease);
+        }
+        .form-gerar input:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(219,39,119,0.1); }
+
+        .btn-gerar {
+            background: var(--pink); color: white; border: none;
+            padding: 14px 22px; border-radius: 10px; cursor: pointer;
+            font-weight: 700; font-size: 1rem; white-space: nowrap;
+            min-height: 50px; width: 100%;
+            transition: var(--ease);
+        }
+        .btn-gerar:hover { background: var(--pink-dark); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(219,39,119,0.25); }
+        .btn-gerar:active { transform: translateY(0); }
+        @media (min-width: 480px) { .btn-gerar { width: auto; } }
+
+        /* Caixa do link gerado */
+        .link-gerado {
+            margin-top: 14px; padding: 14px 16px; background: white;
+            border: 1px solid var(--pink); border-radius: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 10px; flex-wrap: wrap;
+        }
+        .link-gerado code {
+            color: #333; font-weight: bold; word-break: break-all;
+            font-size: 0.85rem; flex: 1;
+        }
+
+        /*
+            BOTÃO COPIAR — redesenhado
+            Feedback visual "Copiado! ✅" via classe JS
+        */
+        .btn-copiar {
+            background: var(--pink); color: white; border: none;
+            padding: 10px 18px; border-radius: 8px; cursor: pointer;
+            font-weight: 700; white-space: nowrap; min-height: 44px;
+            font-size: 0.88rem; letter-spacing: 0.5px;
+            transition: var(--ease);
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-copiar:hover { background: var(--pink-dark); }
+
+        /* Estado copiado — verde */
+        .btn-copiar.copiado {
+            background: #16a34a;
+            pointer-events: none; /* evita clique duplo */
+        }
+
+        .flash-sucesso {
+            padding: 10px 14px; background: var(--green-badge);
+            color: var(--green-text); border-radius: 8px;
+            text-align: center; font-weight: bold; margin-top: 10px;
+        }
+
+        /* ============================================
+           BARRA DE AÇÕES
+        ============================================ */
+        .barra-acoes {
+            display: flex; gap: 10px; margin-bottom: 20px;
+            flex-wrap: wrap; align-items: center;
+        }
+        .barra-acoes input {
+            flex: 1; min-width: 160px;
+            padding: 13px 16px;
+            border-radius: 10px; border: 1px solid var(--gray-border);
+            font-size: 1rem; outline: none; transition: var(--ease);
+        }
+        .barra-acoes input:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(219,39,119,0.1); }
+
+        .btn-acao {
+            display: inline-flex; align-items: center; justify-content: center;
+            text-decoration: none; padding: 13px 18px; border-radius: 10px;
+            font-weight: 700; font-size: 0.9rem; color: white;
+            white-space: nowrap; min-height: 50px; transition: var(--ease);
+        }
+        .btn-acao:hover { filter: brightness(1.12); transform: translateY(-1px); }
+        .btn-acao:active { transform: translateY(0); }
+        .btn-download { background-color: #166534; }
+        .btn-sair     { background-color: #ef4444; }
+
+        @media (max-width: 480px) {
+            .barra-acoes { flex-direction: column; }
+            .barra-acoes input, .btn-acao { width: 100%; }
+        }
+
+        /* ============================================
+           RESUMO
+        ============================================ */
+        .resumo-cards {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 12px; margin-bottom: 24px;
+        }
+        .resumo-card { padding: 16px; border-radius: var(--radius); border: 1px solid; text-align: center; }
+        .resumo-card.sim { background: var(--green-bg); border-color: var(--green-border); color: var(--green-text); }
+        .resumo-card.nao { background: var(--red-bg);   border-color: var(--red-border);   color: var(--red-text); }
+        .resumo-card small { display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+        .resumo-card strong { font-size: clamp(1.6rem, 6vw, 2rem); }
+
+        /* ============================================
+           TABELA CONVIDADOS
+        ============================================ */
+        .tabela-wrap {
+            overflow-x: auto; margin-bottom: 32px;
+            -webkit-overflow-scrolling: touch;
+            border-radius: var(--radius); border: 1px solid var(--gray-border);
+        }
+        .tabela-convidados {
+            width: 100%; border-collapse: collapse; background: white; min-width: 600px;
+        }
+        .tabela-convidados thead tr { background-color: var(--pink); color: white; text-align: left; }
+        .tabela-convidados th, .tabela-convidados td { padding: 13px 15px; font-size: 0.88rem; }
+        .tabela-convidados td { border-bottom: 1px solid #f3f4f6; }
+        .tabela-convidados tr:last-child td { border-bottom: none; }
+
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+        .badge-sim { background: var(--green-badge); color: var(--green-text); }
+        .badge-nao { background: var(--red-badge);   color: var(--red-text); }
+
+        /* ============================================
+           CARDS MOBILE — CONVIDADOS
+        ============================================ */
+        .cards-mobile { display: none; }
+
+        @media (max-width: 640px) {
+            .tabela-wrap { display: none; }
+            .cards-mobile { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+            .card-convidado {
+                background: white; border: 1px solid var(--gray-border);
+                border-radius: var(--radius); padding: 16px;
+                box-shadow: 0 1px 6px rgba(0,0,0,0.05); transition: box-shadow 0.2s;
+            }
+            .card-convidado:active { box-shadow: 0 2px 12px rgba(219,39,119,0.1); }
+            .card-convidado .card-nome { font-weight: 700; font-size: 1rem; color: #111; margin-bottom: 8px; }
+            .card-convidado .card-linha {
+                display: flex; justify-content: space-between; align-items: center;
+                font-size: 0.85rem; color: #666; padding: 5px 0; border-bottom: 1px solid #f3f4f6;
+            }
+            .card-convidado .card-linha:last-of-type { border-bottom: none; }
+            .card-convidado .card-linha span:first-child { font-weight: 600; color: #444; }
+            .card-convidado .card-acoes { margin-top: 10px; display: flex; justify-content: flex-end; }
+            .card-convidado .btn-excluir {
+                font-size: 0.85rem; font-weight: 700; text-decoration: none; padding: 8px 14px;
+                border-radius: 8px; background: #fef2f2; border: 1px solid #fee2e2; color: #b91c1c;
+                min-height: 38px; display: flex; align-items: center; gap: 4px; transition: var(--ease);
+            }
+            .card-convidado .btn-excluir:hover { background: #fee2e2; }
+        }
+
+        /* ============================================
+           BOTÕES VER MAIS / VER MENOS
+        ============================================ */
+        .btn-expandir {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            margin: 14px auto 0;
+            background: white; border: 1.5px solid var(--pink); color: var(--pink);
+            padding: 11px 28px; border-radius: 100px;
+            font-weight: 700; font-size: 0.88rem; cursor: pointer; min-height: 46px;
+            transition: var(--ease); letter-spacing: 0.5px;
+        }
+        .btn-expandir:hover { background: var(--pink); color: white; }
+        .btn-expandir:active { transform: scale(0.98); }
+        .btn-expandir .seta { display: inline-block; transition: transform 0.3s ease; font-style: normal; }
+        .btn-expandir.expandido .seta { transform: rotate(180deg); }
+
+        .wrap-btn-cards { display: none; margin-bottom: 28px; }
+        @media (max-width: 640px) { .wrap-btn-cards { display: block; } }
+        .wrap-btn-logs { margin-top: 14px; }
+
+        /* ============================================
+           GRÁFICO DE FRALDAS
+           CORREÇÃO: grid simétrico e responsivo
+        ============================================ */
+        .secao-grafico {
+            display: flex; align-items: center; justify-content: space-around;
+            flex-wrap: wrap; gap: 24px; margin-top: 32px;
+        }
+
+        .grafico-canvas-wrap {
+            width: min(220px, 70vw);
+            flex-shrink: 0; overflow: hidden;
+        }
+
+        /*
+            CORREÇÃO DOS CARDS DE FRALDA
+            Grid fixo com largura mínima garante simetria perfeita
+        */
+        .fraldas-cards {
+            display: grid;
+            /* 3 colunas de tamanho igual — muda para 2 em telas pequenas */
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: min(280px, 90%);
+        }
+
+        @media (max-width: 420px) {
+            .fraldas-cards {
+                grid-template-columns: repeat(2, 1fr);
+                width: min(200px, 90%);
+            }
+        }
+
+        .fralda-card {
+            background: var(--pink-pale);
+            border: 1px solid #fbcfe8;
+            padding: 16px 12px;
+            border-radius: 12px;
+            text-align: center;
+            transition: var(--ease);
+        }
+        .fralda-card:hover { box-shadow: 0 4px 16px rgba(219,39,119,0.12); transform: translateY(-2px); }
+        .fralda-card small {
+            display: block; color: var(--pink); font-weight: 700;
+            font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;
+        }
+        .fralda-card strong { font-size: 1.8rem; color: #1f2937; line-height: 1; }
+
+        /* ============================================
+           SEÇÃO DE LOGS
+        ============================================ */
+        .secao-logs {
+            background: #f8fafc; padding: 20px;
+            border-radius: var(--radius); border: 1px solid #e2e8f0; margin-top: 40px;
+        }
+        .secao-logs h3 { margin-bottom: 14px; font-size: 1rem; color: #1e293b; }
+
+        .logs-busca-wrap { margin-bottom: 14px; position: relative; }
+        .logs-busca-wrap::before {
+            content: '🔍'; position: absolute; left: 14px; top: 50%;
+            transform: translateY(-50%); font-size: 0.85rem; pointer-events: none; opacity: 0.6;
+        }
+        .input-busca-logs {
+            width: 100%; padding: 12px 16px 12px 38px;
+            font-size: 1rem; font-family: 'Segoe UI', sans-serif;
+            border: 1.5px solid #e2e8f0; border-radius: 10px; background: white;
+            color: var(--gray-text); outline: none; transition: var(--ease); max-width: 100%;
+        }
+        .input-busca-logs:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(219,39,119,0.1); }
+
+        .logs-sem-resultado {
+            display: none; text-align: center; padding: 16px;
+            color: #94a3b8; font-size: 0.88rem; font-style: italic;
+        }
+
+        .logs-wrap {
+            overflow-x: auto; -webkit-overflow-scrolling: touch;
+            border-radius: 10px; border: 1px solid #e2e8f0;
+        }
+        .tabela-logs { width: 100%; font-size: 0.83rem; border-collapse: collapse; min-width: 480px; }
+        .tabela-logs thead tr { text-align: left; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+        .tabela-logs th, .tabela-logs td { padding: 10px 12px; }
+        .tabela-logs td { border-bottom: 1px solid #f1f5f9; }
+        .tabela-logs tr:last-child td { border-bottom: none; }
+        .tabela-logs .col-hora { color: #94a3b8; white-space: nowrap; }
+        .tabela-logs .col-acao { color: var(--pink); }
+        .tabela-logs .col-ip   { color: #64748b; }
+        .tabela-logs tr.log-oculto { display: none; }
+
+        .logs-cards-mobile { display: none; }
+        @media (max-width: 540px) {
+            .logs-wrap { display: none; }
+            .logs-cards-mobile { display: flex; flex-direction: column; gap: 8px; }
+            .log-card {
+                background: white; border: 1px solid #e2e8f0;
+                border-radius: 10px; padding: 12px 14px; font-size: 0.85rem; transition: var(--ease);
+            }
+            .log-card .log-quem { font-weight: 700; color: #1e293b; margin-bottom: 4px; font-size: 0.92rem; }
+            .log-card .log-detalhe { color: #64748b; font-size: 0.78rem; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+            .log-card .log-acao { color: var(--pink); font-weight: 600; }
+            .log-card.log-oculto { display: none; }
+        }
+
+        hr.sep { margin: 40px 0 28px; border: 0; border-top: 1px dashed #ccc; }
+    </style>
 </head>
-<body style="background-color: #f9fafb; font-family: 'Segoe UI', sans-serif; color: #374151; margin: 0; padding: 20px;">
+<body>
 
-    <div style="max-width: 1100px; margin: 0 auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        
-        <h1 style="text-align: center; color: #db2777; margin-bottom: 30px;">Painel Administrativo - Ayla Maria 🎀</h1>
+<div class="painel">
 
-        <section style="background: #fff5f8; padding: 20px; border-radius: 15px; border: 1px solid #fbcfe8; margin-bottom: 30px;">
-            <h3 style="color: #db2777; margin-top: 0;">🎫 Gerar Novo Convite</h3>
-            <form action="/admin/gerar_link" method="POST" style="display: flex; gap: 10px;">
-                <input type="text" name="nome_novo_convidado" placeholder="Nome do Convidado (Ex: Tia Bete)" required 
-                    style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none;">
-                <button type="submit" style="background: #db2777; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold;">Gerar Link ✨</button>
-            </form>
+    <h1 class="painel-titulo">Painel Administrativo — Ayla Maria 🎀</h1>
 
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div style="margin-top: 15px;">
-                {% for message in messages %}
-                    {% if '/convite/' in message %}
-                        <div style="padding: 15px; background: white; border: 1px solid #db2777; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <strong style="color: #be185d;">Link Gerado:</strong> 
-                                <code id="linkTexto" style="color: #333; font-weight: bold;">{{ request.host_url[:-1] }}{{ message.split(': ')[1] }}</code>
-                            </div>
-                            <button onclick="copiarLink()" style="background: #db2777; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Copiar 📋</button>
+    <!-- GERAR CONVITE -->
+    <section class="secao-gerar">
+        <h3>🎫 Gerar Novo Convite</h3>
+        <form action="/admin/gerar_link" method="POST" class="form-gerar">
+            <input type="text" name="nome_novo_convidado" placeholder="Nome do Convidado (Ex: Tia Bete)" required>
+            <button type="submit" class="btn-gerar">Gerar Link ✨</button>
+        </form>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div style="margin-top: 14px;">
+            {% for message in messages %}
+                {% if '/convite/' in message %}
+                    <div class="link-gerado">
+                        <div style="flex:1">
+                            <strong style="color:var(--pink-dark);font-size:0.8rem;">Link Gerado:</strong><br>
+                            <code id="linkTexto">{{ request.host_url[:-1] }}{{ message.split(': ')[1] }}</code>
                         </div>
-                    {% else %}
-                        <div style="padding: 10px; background: #dcfce7; color: #166534; border-radius: 8px; text-align: center; font-weight: bold;">{{ message }}</div>
-                    {% endif %}
+                        <!--
+                            CORREÇÃO: botão copiar com ID para o JS robusto
+                        -->
+                        <button id="btnCopiar" onclick="copiarLink()" class="btn-copiar">
+                            📋 Copiar
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="flash-sucesso">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+    </section>
+
+    <!-- BARRA DE AÇÕES -->
+    <div class="barra-acoes">
+        <input type="text" id="inputBusca" onkeyup="filtrarNomes()" placeholder="🔍 Pesquisar convidado...">
+        <a href="/download" class="btn-acao btn-download">📥 Planilha</a>
+        <a href="/logout"   class="btn-acao btn-sair">Sair 🚪</a>
+    </div>
+
+    <!-- RESUMO -->
+    <div class="resumo-cards">
+        <div class="resumo-card sim">
+            <small>Confirmados</small>
+            <strong>{{ sim }}</strong>
+        </div>
+        <div class="resumo-card nao">
+            <small>Ausentes</small>
+            <strong>{{ nao }}</strong>
+        </div>
+    </div>
+
+    <!-- TABELA — desktop/tablet -->
+    <div class="tabela-wrap">
+        <table class="tabela-convidados">
+            <thead>
+                <tr>
+                    <th>Data/Hora</th>
+                    <th>Nome</th>
+                    <th style="text-align:center">Presença</th>
+                    <th style="text-align:center">Fralda</th>
+                    <th>Mimo Escolhido</th>
+                    <th style="text-align:center">Ação</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabela">
+                {% for c in convidados %}
+                <tr>
+                    <td style="color:#9ca3af;font-size:0.78rem;">{{ c.data if c.data else '--/--/--' }}</td>
+                    <td style="font-weight:700;">{{ c.nome }}</td>
+                    <td style="text-align:center">
+                        <span class="badge {{ 'badge-sim' if c.presenca == 'Sim' else 'badge-nao' }}">
+                            {{ c.presenca }}
+                        </span>
+                    </td>
+                    <td style="text-align:center;font-weight:700;">{{ c.fralda if c.fralda and c.fralda != "" else 'N/A' }}</td>
+                    <td>{{ c.mimo }}</td>
+                    <td style="text-align:center">
+                        <a href="{{ url_for('excluir', nome=c.nome) }}"
+                           onclick="return confirm('Excluir {{ c.nome }}?')"
+                           style="text-decoration:none;font-size:1.1rem;">🗑️</a>
+                    </td>
+                </tr>
                 {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
-        </section>
+            </tbody>
+        </table>
+    </div>
 
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center;">
-            <input type="text" id="inputBusca" onkeyup="filtrarNomes()" placeholder="🔍 Pesquisar convidado na lista..." 
-                style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; outline: none; font-size: 1rem;">
-            <a href="/download" style="background-color: #166534; color: white; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold;">📥 Download Planilha</a>
-            <a href="/logout" style="background-color: #ef4444; color: white; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold;">Sair 🚪</a>
+    <!-- CARDS MOBILE -->
+    <div class="cards-mobile" id="cardsMobile">
+        {% for c in convidados %}
+        <div class="card-convidado" data-nome="{{ c.nome | lower }}" data-index="{{ loop.index0 }}">
+            <div class="card-nome">{{ c.nome }}</div>
+            <div class="card-linha">
+                <span>Presença</span>
+                <span class="badge {{ 'badge-sim' if c.presenca == 'Sim' else 'badge-nao' }}">{{ c.presenca }}</span>
+            </div>
+            <div class="card-linha">
+                <span>Fralda</span>
+                <span>{{ c.fralda if c.fralda and c.fralda != "" else 'N/A' }}</span>
+            </div>
+            <div class="card-linha">
+                <span>Mimo</span>
+                <span>{{ c.mimo if c.mimo else '—' }}</span>
+            </div>
+            <div class="card-linha">
+                <span>Data</span>
+                <span style="color:#9ca3af;font-size:0.78rem;">{{ c.data if c.data else '--/--/--' }}</span>
+            </div>
+            <div class="card-acoes">
+                <a href="{{ url_for('excluir', nome=c.nome) }}"
+                   onclick="return confirm('Excluir {{ c.nome }}?')"
+                   class="btn-excluir">🗑️ Excluir</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- BOTÃO VER MAIS/MENOS — cards convidados -->
+    <div class="wrap-btn-cards">
+        <button id="btnVerMaisCards" class="btn-expandir" onclick="toggleCards()">
+            Ver Mais <i class="seta">⌄</i>
+        </button>
+    </div>
+
+    <!-- GRÁFICO -->
+    <hr class="sep">
+    <div class="secao-grafico">
+        <div class="grafico-canvas-wrap">
+            <canvas id="graficoFraldas"></canvas>
+        </div>
+        <!-- CORREÇÃO: grid simétrico em vez de flex livre -->
+        <div class="fraldas-cards">
+            {% for tamanho, total in fraldas.items() %}
+            <div class="fralda-card">
+                <small>TAM {{ tamanho }}</small>
+                <strong>{{ total }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- LOGS -->
+    <section class="secao-logs" style="margin-top:40px;">
+        <h3>🕵️‍♂️ Últimos Acessos ao Site</h3>
+
+        <div class="logs-busca-wrap">
+            <input
+                type="text"
+                id="inputBuscaLogs"
+                class="input-busca-logs"
+                placeholder="Filtrar por nome, IP ou ação..."
+                oninput="filtrarLogs()"
+                autocomplete="off"
+            >
         </div>
 
-        <div style="display: flex; gap: 15px; margin-bottom: 25px; text-align: center;">
-            <div style="flex: 1; background: #ecfdf5; padding: 15px; border-radius: 12px; border: 1px solid #10b981;">
-                <small style="color: #065f46; font-weight: bold;">CONFIRMADOS</small><br><strong style="font-size: 1.8rem;">{{ sim }}</strong>
-            </div>
-            <div style="flex: 1; background: #fef2f2; padding: 15px; border-radius: 12px; border: 1px solid #ef4444;">
-                <small style="color: #991b1b; font-weight: bold;">AUSENTES</small><br><strong style="font-size: 1.8rem;">{{ nao }}</strong>
-            </div>
-        </div>
+        <p class="logs-sem-resultado" id="logsSemResultado">
+            Nenhum registro encontrado para essa busca.
+        </p>
 
-        <div style="overflow-x: auto; margin-bottom: 40px;">
-            <table style="width: 100%; border-collapse: collapse; background: white; min-width: 900px;">
+        <!-- Tabela: tablet/desktop -->
+        <div class="logs-wrap">
+            <table class="tabela-logs">
                 <thead>
-                    <tr style="background-color: #db2777; color: white; text-align: left;">
-                        <th style="padding: 15px;">Data/Hora</th>
-                        <th style="padding: 15px;">Nome</th>
-                        <th style="padding: 15px; text-align: center;">Presença</th>
-                        <th style="padding: 15px; text-align: center;">Fralda</th>
-                        <th style="padding: 15px;">Mimo Escolhido</th>
-                        <th style="padding: 15px; text-align: center;">Ação</th>
+                    <tr>
+                        <th>Horário</th>
+                        <th>Quem</th>
+                        <th>Ação</th>
+                        <th>IP</th>
                     </tr>
                 </thead>
-                <tbody id="corpoTabela">
-                    {% for c in convidados %}
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px; color: #666; font-size: 0.8rem;">{{ c.data if c.data else '--/--/--' }}</td>
-                        <td style="padding: 12px; font-weight: bold;">{{ c.nome }}</td>
-                        <td style="padding: 12px; text-align: center;">
-                            <span style="padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; background: {{ '#dcfce7' if c.presenca == 'Sim' else '#fee2e2' }}; color: {{ '#166534' if c.presenca == 'Sim' else '#991b1b' }};">
-                                {{ c.presenca }}
-                            </span>
-                        </td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">{{ c.fralda if c.fralda and c.fralda != "" else 'N/A' }}</td>
-                        <td style="padding: 12px;">{{ c.mimo }}</td>
-                        <td style="padding: 12px; text-align: center;">
-                            <a href="{{ url_for('excluir', nome=c.nome) }}" onclick="return confirm('Excluir {{ c.nome }}?')" style="text-decoration: none;">🗑️</a>
-                        </td>
+                <tbody id="corpoLogs">
+                    {% for log in logs %}
+                    <tr data-log-usuario="{{ log.usuario | lower }}"
+                        data-log-ip="{{ log.ip | lower }}"
+                        data-log-acao="{{ log.endpoint | lower }}">
+                        <td class="col-hora">{{ log.timestamp }}</td>
+                        <td style="font-weight:700;">{{ log.usuario }}</td>
+                        <td class="col-acao">{{ log.endpoint }}</td>
+                        <td class="col-ip"><code>{{ log.ip }}</code></td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        <div style="display: flex; align-items: center; justify-content: space-around; margin-top: 40px; flex-wrap: wrap; gap: 20px;">
-            <div style="width: 250px;"><canvas id="graficoFraldas"></canvas></div>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px; max-width: 400px;">
-                {% for tamanho, total in fraldas.items() %}
-                <div style="flex: 1; min-width: 80px; background: #fff5f8; border: 1px solid #fbcfe8; padding: 15px; border-radius: 10px; text-align: center;">
-                    <small style="color: #db2777; font-weight: bold;">TAM {{ tamanho }}</small><br>
-                    <strong style="font-size: 1.5rem;">{{ total }}</strong>
+        <!-- Cards mobile: logs -->
+        <div class="logs-cards-mobile" id="logsMobile">
+            {% for log in logs %}
+            <div class="log-card"
+                 data-log-usuario="{{ log.usuario | lower }}"
+                 data-log-ip="{{ log.ip | lower }}"
+                 data-log-acao="{{ log.endpoint | lower }}"
+                 data-log-inicial="true">
+                <div class="log-quem">{{ log.usuario }}</div>
+                <div class="log-detalhe">
+                    <span class="log-acao">{{ log.endpoint }}</span>
+                    <span>{{ log.timestamp }}</span>
+                    <span><code>{{ log.ip }}</code></span>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
         </div>
 
-        <hr style="margin: 50px 0 30px 0; border: 0; border-top: 1px dashed #ccc;">
+        <div class="wrap-btn-logs">
+            <button id="btnVerMaisLogs" class="btn-expandir" onclick="toggleLogs()">
+                Ver Mais <i class="seta">⌄</i>
+            </button>
+        </div>
+    </section>
 
-        <section style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <h3 style="margin-top: 0; font-size: 1.1rem; color: #1e293b;">🕵️‍♂️ Últimos Acessos ao Site</h3>
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
-                    <thead>
-                        <tr style="text-align: left; color: #64748b; border-bottom: 2px solid #e2e8f0;">
-                            <th style="padding: 10px;">Horário</th>
-                            <th style="padding: 10px;">Quem</th>
-                            <th style="padding: 10px;">Ação</th>
-                            <th style="padding: 10px;">IP</th>
-                        </tr>
-                    </thead>
-                    <tbody id="corpoLogs">
-                        {% for log in logs %}
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px; color: #94a3b8;">{{ log.timestamp }}</td>
-                            <td style="padding: 10px; font-weight: bold;">{{ log.usuario }}</td>
-                            <td style="padding: 10px; color: #db2777;">{{ log.endpoint }}</td>
-                            <td style="padding: 10px; color: #64748b;"><code>{{ log.ip }}</code></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div style="text-align: center; margin-top: 15px;">
-                <button id="btnVerMais" onclick="carregarMaisAcessos()" style="background: white; border: 1px solid #cbd5e1; padding: 8px 20px; border-radius: 20px; color: #64748b; cursor: pointer; font-weight: bold;">
-                    Clique para ver mais ⬇️
-                </button>
-            </div>
-        </section>
-    </div>
+</div><!-- /painel -->
 
-    <script>
-        function copiarLink() {
-            const link = document.getElementById("linkTexto").innerText;
-            navigator.clipboard.writeText(link).then(() => alert("Link copiado! 📋"));
+<script>
+    /* =========================================================
+       COPIAR LINK — ROBUSTO COM FALLBACK
+       Funciona em: Safari iOS, Chrome Android, HTTP (sem HTTPS)
+       Estratégia:
+         1. Tenta navigator.clipboard (moderno, requer HTTPS/localhost)
+         2. Fallback: textarea invisível + execCommand (funciona em HTTP e Safari antigo)
+    ========================================================= */
+    function copiarLink() {
+        const el  = document.getElementById("linkTexto");
+        const btn = document.getElementById("btnCopiar");
+        if (!el || !btn) return;
+
+        const texto = el.innerText.trim();
+
+        function feedback() {
+            btn.classList.add("copiado");
+            btn.innerHTML = "✅ Copiado!";
+            // Volta ao estado original após 2.5s
+            setTimeout(() => {
+                btn.classList.remove("copiado");
+                btn.innerHTML = "📋 Copiar";
+            }, 2500);
         }
 
-        function filtrarNomes() {
-            let input = document.getElementById("inputBusca").value.toLowerCase();
-            let linhas = document.querySelectorAll("#corpoTabela tr");
-            linhas.forEach(linha => {
-                let nome = linha.cells[1].textContent.toLowerCase();
-                linha.style.display = nome.includes(input) ? "" : "none";
-            });
+        /* Tentativa 1: Clipboard API (moderno) */
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(texto)
+                .then(feedback)
+                .catch(() => fallbackCopy(texto, feedback));
+            return;
         }
 
-        let offsetLogs = 10;
-        function carregarMaisAcessos() {
-            const btn = document.getElementById("btnVerMais");
-            const corpoLogs = document.getElementById("corpoLogs");
-            btn.innerText = "Carregando...";
-            fetch(`/admin/api/logs?offset=${offsetLogs}`)
-                .then(res => res.json())
-                .then(dados => {
-                    if (dados.length === 0) { btn.innerText = "Fim dos registros"; btn.disabled = true; return; }
-                    dados.forEach(log => {
-                        const tr = document.createElement("tr");
-                        tr.style.borderBottom = "1px solid #f1f5f9";
-                        tr.innerHTML = `<td style="padding: 10px; color: #94a3b8;">${log.timestamp}</td><td style="padding: 10px; font-weight: bold;">${log.usuario}</td><td style="padding: 10px; color: #db2777;">${log.endpoint}</td><td style="padding: 10px; color: #64748b;"><code>${log.ip}</code></td>`;
-                        corpoLogs.appendChild(tr);
-                    });
-                    offsetLogs += 10;
-                    btn.innerText = "Clique para ver mais ⬇️";
-                });
-        }
+        /* Tentativa 2: execCommand (fallback para HTTP e Safari antigo) */
+        fallbackCopy(texto, feedback);
+    }
 
-        const dadosFraldas = {{ fraldas | tojson }};
-        new Chart(document.getElementById('graficoFraldas'), {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(dadosFraldas),
-                datasets: [{ data: Object.values(dadosFraldas), backgroundColor: ['#f472b6', '#db2777', '#be185d', '#701a75'] }]
-            },
-            options: { plugins: { legend: { position: 'bottom' } } }
+    function fallbackCopy(texto, cb) {
+        const ta = document.createElement("textarea");
+        ta.value = texto;
+        /* Posiciona fora da tela mas ainda renderizado — necessário para iOS */
+        ta.style.cssText = "position:fixed;left:-9999px;top:50%;opacity:0;font-size:16px;";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        /* setSelectionRange necessário no iOS Safari */
+        ta.setSelectionRange(0, 99999);
+        try {
+            document.execCommand("copy");
+            cb();
+        } catch (e) {
+            /* Se tudo falhar, abre prompt com o link para copiar manualmente */
+            prompt("Copie o link abaixo:", texto);
+        }
+        document.body.removeChild(ta);
+    }
+
+    /* =========================================================
+       FILTRAR CONVIDADOS
+       Case-insensitive + trim()
+    ========================================================= */
+    function filtrarNomes() {
+        const input   = document.getElementById("inputBusca").value.trim().toLowerCase();
+        const emBusca = input.length > 0;
+
+        document.querySelectorAll("#corpoTabela tr").forEach(linha => {
+            const nome = linha.cells[1].textContent.trim().toLowerCase();
+            linha.style.display = nome.includes(input) ? "" : "none";
         });
-    </script>
+
+        const cards     = document.querySelectorAll("#cardsMobile .card-convidado");
+        const expandido = document.getElementById("btnVerMaisCards").classList.contains("expandido");
+
+        cards.forEach(card => {
+            const nome = (card.dataset.nome || "").trim();
+            const idx  = parseInt(card.dataset.index);
+            const bate = nome.includes(input);
+            if (emBusca) {
+                card.style.display = bate ? "" : "none";
+            } else {
+                card.style.display = (expandido || idx < LIMITE_CARDS) ? "" : "none";
+            }
+        });
+
+        const btnCards = document.querySelector(".wrap-btn-cards");
+        if (btnCards) btnCards.style.display = emBusca ? "none" : "block";
+    }
+
+    /* =========================================================
+       FILTRAR LOGS
+       Case-insensitive + trim() (busca por nome, IP e ação)
+    ========================================================= */
+    function filtrarLogs() {
+        const termo = document.getElementById("inputBuscaLogs").value.trim().toLowerCase();
+
+        let visivelTabela = 0;
+        let visivelMobile = 0;
+
+        document.querySelectorAll("#corpoLogs tr").forEach(tr => {
+            const bate = !termo
+                || (tr.dataset.logUsuario || "").includes(termo)
+                || (tr.dataset.logIp      || "").includes(termo)
+                || (tr.dataset.logAcao    || "").includes(termo);
+            tr.classList.toggle("log-oculto", !bate);
+            if (bate) visivelTabela++;
+        });
+
+        document.querySelectorAll("#logsMobile .log-card").forEach(card => {
+            const bate = !termo
+                || (card.dataset.logUsuario || "").includes(termo)
+                || (card.dataset.logIp      || "").includes(termo)
+                || (card.dataset.logAcao    || "").includes(termo);
+            card.classList.toggle("log-oculto", !bate);
+            if (bate) visivelMobile++;
+        });
+
+        const semResultado = document.getElementById("logsSemResultado");
+        semResultado.style.display =
+            (termo.length > 0 && visivelTabela === 0 && visivelMobile === 0) ? "block" : "none";
+
+        const btnLogs = document.querySelector(".wrap-btn-logs");
+        if (btnLogs) btnLogs.style.display = termo ? "none" : "block";
+    }
+
+    /* =========================================================
+       VER MAIS / VER MENOS — CARDS CONVIDADOS
+    ========================================================= */
+    const LIMITE_CARDS = 5;
+
+    function inicializarCards() {
+        const cards = document.querySelectorAll("#cardsMobile .card-convidado");
+        cards.forEach(card => {
+            if (parseInt(card.dataset.index) >= LIMITE_CARDS) card.style.display = "none";
+        });
+        if (cards.length <= LIMITE_CARDS) {
+            const wrap = document.querySelector(".wrap-btn-cards");
+            if (wrap) wrap.style.display = "none";
+        }
+    }
+
+    function toggleCards() {
+        const cards    = document.querySelectorAll("#cardsMobile .card-convidado");
+        const btn      = document.getElementById("btnVerMaisCards");
+        const expandir = !btn.classList.contains("expandido");
+
+        cards.forEach(card => {
+            if (parseInt(card.dataset.index) >= LIMITE_CARDS) {
+                card.style.display = expandir ? "" : "none";
+            }
+        });
+
+        btn.classList.toggle("expandido", expandir);
+        btn.innerHTML = expandir
+            ? 'Ver Menos <i class="seta">⌄</i>'
+            : 'Ver Mais <i class="seta">⌄</i>';
+
+        if (!expandir) {
+            document.getElementById("cardsMobile").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }
+
+    /* =========================================================
+       VER MAIS / VER MENOS — LOGS
+    ========================================================= */
+    let offsetLogs    = 10;
+    let logsExpandido = false;
+
+    function toggleLogs() {
+        logsExpandido ? recolherLogs() : carregarMaisLogs();
+    }
+
+    function carregarMaisLogs() {
+        const btn       = document.getElementById("btnVerMaisLogs");
+        const corpoLogs = document.getElementById("corpoLogs");
+        const logsMob   = document.getElementById("logsMobile");
+
+        btn.innerText = "Carregando...";
+        btn.disabled  = true;
+
+        fetch(`/admin/api/logs?offset=${offsetLogs}`)
+            .then(res => res.json())
+            .then(dados => {
+                if (dados.length === 0) {
+                    logsExpandido = true;
+                    btn.disabled  = false;
+                    btn.classList.add("expandido");
+                    btn.innerHTML = 'Ver Menos <i class="seta">⌄</i>';
+                    return;
+                }
+
+                dados.forEach(log => {
+                    const usuarioL = (log.usuario  || "").toLowerCase();
+                    const ipL      = (log.ip        || "").toLowerCase();
+                    const acaoL    = (log.endpoint  || "").toLowerCase();
+
+                    const tr = document.createElement("tr");
+                    tr.setAttribute("data-log-extra",   "true");
+                    tr.setAttribute("data-log-usuario", usuarioL);
+                    tr.setAttribute("data-log-ip",      ipL);
+                    tr.setAttribute("data-log-acao",    acaoL);
+                    tr.innerHTML = `
+                        <td class="col-hora">${log.timestamp}</td>
+                        <td style="font-weight:700">${log.usuario}</td>
+                        <td class="col-acao">${log.endpoint}</td>
+                        <td class="col-ip"><code>${log.ip}</code></td>`;
+                    corpoLogs.appendChild(tr);
+
+                    const card = document.createElement("div");
+                    card.className = "log-card";
+                    card.setAttribute("data-log-extra",   "true");
+                    card.setAttribute("data-log-usuario", usuarioL);
+                    card.setAttribute("data-log-ip",      ipL);
+                    card.setAttribute("data-log-acao",    acaoL);
+                    card.innerHTML = `
+                        <div class="log-quem">${log.usuario}</div>
+                        <div class="log-detalhe">
+                            <span class="log-acao">${log.endpoint}</span>
+                            <span>${log.timestamp}</span>
+                            <span><code>${log.ip}</code></span>
+                        </div>`;
+                    logsMob.appendChild(card);
+                });
+
+                offsetLogs   += dados.length;
+                logsExpandido = true;
+                btn.disabled  = false;
+                btn.classList.add("expandido");
+                btn.innerHTML = 'Ver Menos <i class="seta">⌄</i>';
+
+                if (document.getElementById("inputBuscaLogs").value) filtrarLogs();
+            })
+            .catch(() => {
+                btn.disabled  = false;
+                btn.innerText = "Erro — tentar novamente ⌄";
+            });
+    }
+
+    function recolherLogs() {
+        document.querySelectorAll("[data-log-extra='true']").forEach(el => el.remove());
+        offsetLogs    = 10;
+        logsExpandido = false;
+
+        document.getElementById("inputBuscaLogs").value = "";
+        filtrarLogs();
+
+        const btn = document.getElementById("btnVerMaisLogs");
+        btn.classList.remove("expandido");
+        btn.innerHTML = 'Ver Mais <i class="seta">⌄</i>';
+
+        document.querySelector(".secao-logs").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    /* =========================================================
+       GRÁFICO DE FRALDAS
+    ========================================================= */
+    const dadosFraldas = {{ fraldas | tojson }};
+    new Chart(document.getElementById('graficoFraldas'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(dadosFraldas),
+            datasets: [{
+                data: Object.values(dadosFraldas),
+                backgroundColor: ['#f472b6', '#db2777', '#be185d', '#701a75'],
+                borderWidth: 2, borderColor: 'white'
+            }]
+        },
+        options: {
+            plugins: { legend: { position: 'bottom' } },
+            responsive: true, maintainAspectRatio: true
+        }
+    });
+
+    /* =========================================================
+       INICIALIZAÇÃO
+    ========================================================= */
+    inicializarCards();
+</script>
 </body>
 </html>
