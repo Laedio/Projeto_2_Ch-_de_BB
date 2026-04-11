@@ -1,20 +1,21 @@
-ucesso · HTML
-Copiar
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!--
+        viewport-fit=cover: essencial para iPhone com notch/Dynamic Island —
+        garante que o fundo alcance as bordas físicas da tela
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Confirmado! — Chá da Ayla Maria</title>
- 
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
- 
+
     <style>
         /* ============================================
-           TOKENS — mesmos do index.html
+           TOKENS — identidade visual unificada
         ============================================ */
         :root {
             --rose-deep:   #8b3a52;
@@ -22,7 +23,6 @@ Copiar
             --rose-dusty:  #d4909f;
             --rose-pale:   #fce8ec;
             --rose-blush:  #f5d5da;
-            --rose-bg:     #fdf2f4;
             --gold:        #c9a84c;
             --gold-light:  #e8d48a;
             --wine:        #7a2d45;
@@ -31,61 +31,143 @@ Copiar
             --text-light:  #b08a95;
             --white:       #fffcfd;
             --wpp:         #25D366;
-            --wpp-dark:    #128C7E;
+            --wpp-dark:    #1da851;
             --ease:        all 0.3s cubic-bezier(0.4,0,0.2,1);
+
+            /* Glassmorphism */
+            --glass-bg:     rgba(255, 252, 253, 0.84);
+            --glass-border: rgba(245, 213, 218, 0.55);
+            --glass-blur:   blur(20px);
         }
- 
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
- 
+
+        /*
+            html e body sem overflow: hidden —
+            isso é o que causava o conteúdo cortado.
+            Só o canvas de confetes é fixed; tudo mais flui normalmente.
+        */
+        html {
+            scroll-behavior: smooth;
+            /* Fallback para browsers sem suporte a dvh */
+            height: 100%;
+        }
+
         body {
             font-family: 'Nunito', sans-serif;
-            background: linear-gradient(145deg, #fdf0f3 0%, #fef8ee 100%);
+
+            /*
+                CORREÇÃO PRINCIPAL DO VIEWPORT:
+                min-height em camadas de fallback:
+                  1. 100vh           — browsers antigos
+                  2. 100dvh          — Dynamic Viewport Height (Safari 15.4+, Chrome 108+)
+                                       acompanha o colapso da barra de endereços em mobile
+                A regra mais recente que o browser entende prevalece.
+            */
             min-height: 100vh;
+            min-height: 100dvh;
+
+            background: linear-gradient(145deg, #fdf0f3 0%, #fef8ee 60%, #fdf5ee 100%);
+            /* background fixo: não rola junto com o card, mantém visual bonito no scroll */
+            background-attachment: fixed;
+
+            /*
+                SCROLL INTELIGENTE:
+                - overflow-x: hidden   → sem scroll horizontal
+                - overflow-y: auto     → scroll vertical PERMITIDO quando necessário
+                NÃO usar overflow: hidden aqui — isso bloqueava scroll em telas pequenas
+            */
+            overflow-x: hidden;
+            overflow-y: auto;
+
+            /*
+                Layout: centraliza o card verticalmente quando há espaço,
+                empilha quando o conteúdo é maior que a tela (celulares pequenos)
+            */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            overflow: hidden;
+
+            /*
+                Padding com safe-area-inset: respeita o notch/Dynamic Island
+                e a barra de gesto inferior do iPhone.
+                Fallback para browsers que não suportam env()
+            */
+            padding: 24px 16px;
+            padding-top:    max(24px, env(safe-area-inset-top,    24px));
+            padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+            padding-left:   max(16px, env(safe-area-inset-left,   16px));
+            padding-right:  max(16px, env(safe-area-inset-right,  16px));
+
             position: relative;
         }
- 
+
         /* ============================================
-           CANVAS DE CONFETES (atrás de tudo)
+           CANVAS DE CONFETES — sempre fixo, nunca bloqueia
         ============================================ */
         #confettiCanvas {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: 0;
+            /* canvas não deve afetar o layout */
+            width: 100%;
+            height: 100%;
         }
- 
+
         /* ============================================
-           CARD PRINCIPAL com Glassmorphism
+           CARD PRINCIPAL — glassmorphism
         ============================================ */
         .card-sucesso {
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 420px;
-            background: rgba(255, 252, 253, 0.82);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1px solid rgba(245, 213, 218, 0.6);
+
+            /*
+                max-width com clamp:
+                - mínimo: nunca menor que a tela em celulares
+                - ideal: 88vw em tablets  
+                - máximo: 460px em desktop
+            */
+            max-width: clamp(300px, 92vw, 460px);
+
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
             border-radius: 32px;
             box-shadow:
-                0 24px 80px rgba(139, 58, 82, 0.16),
+                0 24px 80px rgba(139, 58, 82, 0.15),
                 0 8px 24px rgba(139, 58, 82, 0.08),
-                inset 0 1px 0 rgba(255,255,255,0.7);
-            overflow: hidden;
-            animation: cardReveal 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+                inset 0 1px 0 rgba(255, 255, 255, 0.75);
+
+            /*
+                overflow: visible (não hidden) —
+                hidden bloqueava o scroll interno em celulares pequenos.
+                A borda arredondada é mantida via border-radius no próprio elemento.
+            */
+            overflow: visible;
+
+            animation: cardReveal 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+
+            /* Garante que o card não seja maior que a área visível */
+            max-height: none;
         }
- 
-        /* Faixa dourada no topo */
-        .card-sucesso::before {
-            content: '';
-            display: block;
+
+        /*
+            Wrapper interno com overflow: hidden para a faixa dourada
+            e o gradiente do header não vazarem do border-radius
+        */
+        .card-inner {
+            border-radius: 32px;
+            overflow: hidden;
+        }
+
+        /* ============================================
+           FAIXA DOURADA NO TOPO
+        ============================================ */
+        .faixa-dourada {
             height: 3px;
             background: linear-gradient(90deg,
                 transparent 0%,
@@ -94,167 +176,212 @@ Copiar
                 var(--gold-light) 80%,
                 transparent 100%);
         }
- 
-        /* ---- Header do card ---- */
+
+        /* ============================================
+           HEADER DO CARD
+        ============================================ */
         .sucesso-header {
-            padding: 32px 28px 20px;
+            padding: 30px 28px 18px;
             text-align: center;
-            background: linear-gradient(175deg, rgba(252,232,236,0.6) 0%, transparent 100%);
+            background: linear-gradient(175deg, rgba(252,232,236,0.65) 0%, transparent 100%);
         }
- 
-        /* Ícone animado */
+
+        /* Ícone animado com anéis pulsantes */
         .icone-wrap {
             position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 90px; height: 90px;
-            margin-bottom: 18px;
+            width: 88px;
+            height: 88px;
+            margin-bottom: 16px;
         }
- 
-        /* Anel pulsante */
-        .icone-wrap::before, .icone-wrap::after {
+
+        /* Anéis: dois pseudo-elementos com delays diferentes */
+        .icone-wrap::before,
+        .icone-wrap::after {
             content: '';
             position: absolute;
             border-radius: 50%;
             border: 2px solid var(--rose-mid);
-            animation: ringPulse 2.4s ease-out infinite;
+            animation: ringPulse 2.6s ease-out infinite;
         }
-        .icone-wrap::before {
-            inset: 0;
-            animation-delay: 0s;
-        }
-        .icone-wrap::after {
-            inset: -10px;
-            opacity: 0;
-            animation-delay: 0.8s;
-        }
- 
+        .icone-wrap::before { inset: 0;       animation-delay: 0s; }
+        .icone-wrap::after  { inset: -10px;   animation-delay: 0.9s; opacity: 0; }
+
         .icone-circulo {
-            width: 80px; height: 80px;
+            width: 78px;
+            height: 78px;
             background: linear-gradient(135deg, var(--rose-mid), var(--rose-deep));
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 2rem;
-            box-shadow: 0 8px 24px rgba(139,58,82,0.3);
-            animation: iconBounce 0.6s 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
-            position: relative; z-index: 1;
+            box-shadow: 0 8px 28px rgba(139,58,82,0.28);
+            animation: iconBounce 0.65s 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+            position: relative;
+            z-index: 1;
         }
- 
+
         .sucesso-titulo {
             font-family: 'Playfair Display', serif;
-            font-size: clamp(1.6rem, 6vw, 2rem);
+            font-size: clamp(1.5rem, 5.5vw, 1.9rem);
             color: var(--wine);
             margin-bottom: 8px;
             animation: fadeUp 0.6s 0.5s both;
+            line-height: 1.2;
         }
- 
+
         .sucesso-sub {
             font-family: 'Cormorant Garamond', serif;
             font-style: italic;
-            font-size: clamp(1rem, 3.5vw, 1.15rem);
+            font-size: clamp(0.98rem, 3.2vw, 1.1rem);
             color: var(--text-mid);
-            line-height: 1.6;
-            animation: fadeUp 0.6s 0.65s both;
+            line-height: 1.65;
+            animation: fadeUp 0.6s 0.62s both;
         }
- 
-        /* ---- Divisor ornamental ---- */
+
+        /* ============================================
+           DIVISOR ORNAMENTAL
+        ============================================ */
         .divisor-ornamental {
-            display: flex; align-items: center; gap: 12px;
-            margin: 20px 28px;
-            animation: fadeUp 0.6s 0.75s both;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 28px;
+            animation: fadeUp 0.6s 0.72s both;
         }
-        .div-linha-ouro {
-            flex: 1; height: 1px;
+        .div-ouro {
+            flex: 1;
+            height: 1px;
             background: linear-gradient(90deg, transparent, var(--gold-light));
         }
-        .div-linha-ouro.r {
+        .div-ouro.r {
             background: linear-gradient(90deg, var(--gold-light), transparent);
         }
-        .div-laço { font-size: 1.1rem; }
- 
-        /* ---- Detalhes da confirmação ---- */
+        .div-emoji { font-size: 1rem; }
+
+        /* ============================================
+           CORPO DO CARD — detalhes do evento
+        ============================================ */
         .sucesso-body {
-            padding: 0 28px 28px;
+            padding: 0 24px 28px;
         }
- 
+
+        /* Linhas de detalhe com micro glass */
         .detalhe-linha {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 16px;
-            background: rgba(252,232,236,0.4);
-            border: 1px solid rgba(245,213,218,0.5);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            background: rgba(252,232,236,0.38);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(245,213,218,0.45);
             border-radius: 14px;
             margin-bottom: 10px;
             animation: fadeUp 0.5s both;
-            backdrop-filter: blur(4px);
+            transition: var(--ease);
         }
-        .detalhe-linha:nth-child(1) { animation-delay: 0.8s; }
-        .detalhe-linha:nth-child(2) { animation-delay: 0.9s; }
-        .detalhe-linha:nth-child(3) { animation-delay: 1.0s; }
- 
-        .detalhe-icone { font-size: 1.2rem; flex-shrink: 0; }
-        .detalhe-texto { font-size: 0.88rem; color: var(--text-dark); line-height: 1.4; }
+        .detalhe-linha:hover {
+            background: rgba(252,232,236,0.6);
+            transform: translateX(3px);
+        }
+        .detalhe-linha:nth-child(1) { animation-delay: 0.78s; }
+        .detalhe-linha:nth-child(2) { animation-delay: 0.88s; }
+        .detalhe-linha:nth-child(3) { animation-delay: 0.98s; }
+
+        .detalhe-icone {
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .detalhe-texto {
+            font-size: 0.87rem;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
         .detalhe-texto strong { color: var(--rose-deep); }
- 
-        /* ---- Mensagem para a mamãe ---- */
+
+        /* ============================================
+           MENSAGEM + BOTÃO WHATSAPP
+        ============================================ */
         .aviso-wpp {
             text-align: center;
             font-family: 'Cormorant Garamond', serif;
             font-style: italic;
             font-size: 1rem;
             color: var(--text-light);
-            margin: 18px 0 14px;
-            animation: fadeUp 0.5s 1.1s both;
+            margin: 18px 0 12px;
+            animation: fadeUp 0.5s 1.06s both;
         }
- 
-        /* ---- Botão WhatsApp Premium ---- */
+
         .btn-wpp {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             width: 100%;
-            padding: 17px 20px;
-            background: linear-gradient(135deg, #2ecc71, var(--wpp), #20ba5a);
-            background-size: 200% 200%;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #2ecc71 0%, var(--wpp) 50%, #20ba5a 100%);
             color: white;
             text-decoration: none;
             border-radius: 16px;
             font-family: 'Nunito', sans-serif;
             font-size: 0.95rem;
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
             min-height: 54px;
             box-shadow:
-                0 8px 28px rgba(37,211,102,0.32),
-                0 2px 8px rgba(37,211,102,0.2);
+                0 8px 28px rgba(37,211,102,0.3),
+                0 2px 8px rgba(37,211,102,0.18);
             transition: var(--ease);
             position: relative;
             overflow: hidden;
-            animation: fadeUp 0.5s 1.15s both;
+            animation: fadeUp 0.5s 1.12s both;
         }
- 
+
+        /* Camada de brilho no hover */
         .btn-wpp::before {
             content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.22), transparent);
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.28s;
         }
- 
+
+        /* Efeito ripple no clique */
+        .btn-wpp::after {
+            content: '';
+            position: absolute;
+            width: 0; height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease, opacity 0.5s;
+            opacity: 0;
+        }
+
         .btn-wpp:hover {
-            transform: translateY(-3px);
+            transform: translateY(-3px) scale(1.01);
             box-shadow: 0 14px 40px rgba(37,211,102,0.4);
         }
         .btn-wpp:hover::before { opacity: 1; }
-        .btn-wpp:active { transform: translateY(0); }
- 
-        /* Ícone SVG do WhatsApp */
-        .wpp-icon {
-            width: 22px; height: 22px; flex-shrink: 0;
+        .btn-wpp:active {
+            transform: translateY(0) scale(0.99);
         }
- 
-        /* ---- Botão voltar ---- */
+        .btn-wpp:active::after {
+            width: 260px; height: 260px; opacity: 0;
+        }
+
+        .wpp-icon { width: 21px; height: 21px; flex-shrink: 0; }
+
+        /* ============================================
+           BOTÃO VOLTAR
+        ============================================ */
         .btn-voltar {
             display: block;
             text-align: center;
@@ -265,12 +392,12 @@ Copiar
             font-weight: 600;
             letter-spacing: 0.5px;
             transition: var(--ease);
-            animation: fadeUp 0.5s 1.2s both;
+            animation: fadeUp 0.5s 1.18s both;
         }
         .btn-voltar:hover { color: var(--rose-deep); }
- 
+
         /* ============================================
-           PÉTALAS FLUTUANTES (decoração de fundo)
+           PÉTALAS DECORATIVAS — CSS puro, z-index baixo
         ============================================ */
         .petala {
             position: fixed;
@@ -278,123 +405,167 @@ Copiar
             z-index: 0;
             opacity: 0;
             animation: petalaDrop linear infinite;
+            /* Garante que não cause scroll */
+            will-change: transform, opacity;
         }
- 
+
         /* ============================================
            ANIMAÇÕES
         ============================================ */
         @keyframes cardReveal {
-            from { opacity: 0; transform: translateY(30px) scale(0.94); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
+            from { opacity: 0; transform: translateY(32px) scale(0.93); }
+            to   { opacity: 1; transform: translateY(0)   scale(1); }
         }
- 
+
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(12px); }
+            from { opacity: 0; transform: translateY(14px); }
             to   { opacity: 1; transform: translateY(0); }
         }
- 
+
         @keyframes iconBounce {
-            from { opacity: 0; transform: scale(0.4); }
-            to   { opacity: 1; transform: scale(1); }
+            from { opacity: 0; transform: scale(0.35) rotate(-10deg); }
+            to   { opacity: 1; transform: scale(1) rotate(0deg); }
         }
- 
+
         @keyframes ringPulse {
-            0%   { transform: scale(1);    opacity: 0.7; }
-            100% { transform: scale(1.6);  opacity: 0; }
+            0%   { transform: scale(1);   opacity: 0.7; }
+            100% { transform: scale(1.7); opacity: 0; }
         }
- 
+
         @keyframes petalaDrop {
-            0%   { transform: translateY(-40px) rotate(0deg); opacity: 0; }
-            10%  { opacity: 0.6; }
-            90%  { opacity: 0.4; }
-            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+            0%   { transform: translateY(-60px) rotate(0deg);   opacity: 0; }
+            8%   { opacity: 0.55; }
+            92%  { opacity: 0.35; }
+            100% { transform: translateY(110vh) rotate(380deg); opacity: 0; }
         }
- 
-        /* Mobile extra pequeno */
-        @media (max-width: 380px) {
-            .sucesso-header { padding: 24px 20px 16px; }
-            .sucesso-body { padding: 0 20px 24px; }
-            .divisor-ornamental { margin: 16px 20px; }
+
+        /* ============================================
+           RESPONSIVIDADE FINA
+        ============================================ */
+
+        /* Telas muito pequenas: compacta o card */
+        @media (max-width: 360px) {
+            .sucesso-header { padding: 22px 18px 14px; }
+            .sucesso-body   { padding: 0 16px 22px; }
+            .divisor-ornamental { margin: 14px 18px; }
+            .icone-circulo { width: 68px; height: 68px; font-size: 1.7rem; }
+            .icone-wrap    { width: 76px; height: 76px; }
+        }
+
+        /* Tablets e desktop: aumenta o padding lateral do card */
+        @media (min-width: 480px) {
+            .sucesso-header { padding: 36px 36px 20px; }
+            .sucesso-body   { padding: 0 32px 32px; }
+            .divisor-ornamental { margin: 20px 36px; }
+        }
+
+        /* Desktop: sombra mais dramática */
+        @media (min-width: 768px) {
+            .card-sucesso {
+                box-shadow:
+                    0 32px 100px rgba(139,58,82,0.18),
+                    0 12px 36px rgba(139,58,82,0.1),
+                    inset 0 1px 0 rgba(255,255,255,0.8);
+            }
+        }
+
+        /* Modo paisagem em celulares: reduz padding vertical para não cortar */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body { justify-content: flex-start; padding-top: 16px; padding-bottom: 16px; }
+            .sucesso-header { padding-top: 18px; padding-bottom: 10px; }
+            .icone-wrap     { width: 60px; height: 60px; margin-bottom: 10px; }
+            .icone-circulo  { width: 54px; height: 54px; font-size: 1.5rem; }
+            .sucesso-titulo { font-size: 1.3rem; }
+            .divisor-ornamental { margin: 10px 28px; }
+            .detalhe-linha  { padding: 8px 12px; margin-bottom: 7px; }
+            .aviso-wpp      { margin: 12px 0 8px; }
         }
     </style>
 </head>
 <body>
- 
-    <!-- Canvas dos confetes JS -->
+
+    <!-- Canvas dos confetes (z-index 0, fixed, não afeta layout) -->
     <canvas id="confettiCanvas"></canvas>
- 
-    <!-- Pétalas CSS decorativas -->
-    <div class="petala" style="left:8%;width:12px;height:12px;background:radial-gradient(#f9a8c9,#e8829a);border-radius:50% 0 50% 0;animation-duration:7s;animation-delay:0.2s;"></div>
-    <div class="petala" style="left:20%;width:8px;height:8px;background:radial-gradient(#fbc4d8,#f0a0b4);border-radius:50%;animation-duration:9s;animation-delay:1.4s;"></div>
-    <div class="petala" style="left:65%;width:14px;height:10px;background:radial-gradient(#f9d5e2,#e8829a);border-radius:50% 0 50% 0;animation-duration:8s;animation-delay:0.8s;"></div>
-    <div class="petala" style="left:80%;width:9px;height:9px;background:radial-gradient(#e8d48a,#c9a84c);border-radius:50%;animation-duration:10s;animation-delay:2.1s;"></div>
-    <div class="petala" style="left:45%;width:11px;height:11px;background:radial-gradient(#fbc4d8,#d4909f);border-radius:0 50% 0 50%;animation-duration:6.5s;animation-delay:3s;"></div>
-    <div class="petala" style="left:90%;width:7px;height:7px;background:radial-gradient(#f9a8c9,#c4687c);border-radius:50%;animation-duration:11s;animation-delay:0.5s;"></div>
- 
+
+    <!-- Pétalas CSS flutuantes -->
+    <div class="petala" style="left:6%;  width:13px;height:13px;background:radial-gradient(#f9a8c9,#e8829a);border-radius:50% 0 50% 0;animation-duration:8s; animation-delay:0.3s;"></div>
+    <div class="petala" style="left:18%; width:9px; height:9px; background:radial-gradient(#fbc4d8,#f0a0b4);border-radius:50%;            animation-duration:10s;animation-delay:1.6s;"></div>
+    <div class="petala" style="left:60%; width:15px;height:11px;background:radial-gradient(#f9d5e2,#e8829a);border-radius:50% 0 50% 0;animation-duration:9s; animation-delay:0.9s;"></div>
+    <div class="petala" style="left:78%; width:10px;height:10px;background:radial-gradient(#e8d48a,#c9a84c);border-radius:50%;            animation-duration:11s;animation-delay:2.3s;"></div>
+    <div class="petala" style="left:42%; width:12px;height:12px;background:radial-gradient(#fbc4d8,#d4909f);border-radius:0 50% 0 50%;   animation-duration:7s; animation-delay:3.2s;"></div>
+    <div class="petala" style="left:88%; width:8px; height:8px; background:radial-gradient(#f9a8c9,#c4687c);border-radius:50%;            animation-duration:12s;animation-delay:0.6s;"></div>
+
     <!-- CARD PRINCIPAL -->
     <div class="card-sucesso">
- 
-        <div class="sucesso-header">
-            <div class="icone-wrap">
-                <div class="icone-circulo">🎀</div>
-            </div>
- 
-            <h1 class="sucesso-titulo">Confirmação Recebida!</h1>
-            <p class="sucesso-sub">
-                Que alegria! A Ayla Maria<br>já está ansiosa para te ver! 💕
-            </p>
-        </div>
- 
-        <div class="divisor-ornamental">
-            <div class="div-linha-ouro"></div>
-            <span class="div-laço">🌸</span>
-            <div class="div-linha-ouro r"></div>
-        </div>
- 
-        <div class="sucesso-body">
- 
-            <!-- Detalhes rápidos do evento -->
-            <div class="detalhe-linha">
-                <span class="detalhe-icone">📅</span>
-                <div class="detalhe-texto">
-                    <strong>Sábado, 07 de Fevereiro</strong><br>
-                    Às 20:00 horas
+        <div class="card-inner">
+
+            <!-- Faixa dourada -->
+            <div class="faixa-dourada"></div>
+
+            <!-- Header -->
+            <div class="sucesso-header">
+                <div class="icone-wrap">
+                    <div class="icone-circulo">🎀</div>
                 </div>
+
+                <h1 class="sucesso-titulo">Confirmação Recebida!</h1>
+                <p class="sucesso-sub">
+                    Que alegria! A Ayla Maria<br>
+                    já está ansiosa para te ver! 💕
+                </p>
             </div>
- 
-            <div class="detalhe-linha">
-                <span class="detalhe-icone">📍</span>
-                <div class="detalhe-texto">
-                    <strong>Rua Cariri, 2339</strong><br>
-                    Tabapuá, Caucaia
+
+            <!-- Divisor -->
+            <div class="divisor-ornamental">
+                <div class="div-ouro"></div>
+                <span class="div-emoji">🌸</span>
+                <div class="div-ouro r"></div>
+            </div>
+
+            <!-- Corpo -->
+            <div class="sucesso-body">
+
+                <div class="detalhe-linha">
+                    <span class="detalhe-icone">📅</span>
+                    <div class="detalhe-texto">
+                        <strong>Sábado, 07 de Fevereiro</strong><br>
+                        Às 20:00 horas
+                    </div>
                 </div>
-            </div>
- 
-            <div class="detalhe-linha">
-                <span class="detalhe-icone">🎁</span>
-                <div class="detalhe-texto">
-                    Lembre de trazer a <strong>fralda</strong> e<br>
-                    um miminho especial!
+
+                <div class="detalhe-linha">
+                    <span class="detalhe-icone">📍</span>
+                    <div class="detalhe-texto">
+                        <strong>Rua Cariri, 2339</strong><br>
+                        Tabapuá, Caucaia
+                    </div>
                 </div>
-            </div>
- 
-            <!-- Aviso WhatsApp -->
-            <p class="aviso-wpp">Que tal avisar a mamãe agora? 💬</p>
- 
-            <!-- Botão WhatsApp Premium -->
-            <a id="btnZap" href="#" target="_blank" class="btn-wpp">
-                <!-- SVG oficial do WhatsApp -->
-                <svg class="wpp-icon" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
-                Avisar pelo WhatsApp
-            </a>
- 
-            <a href="/" class="btn-voltar">⬅ Voltar para o convite</a>
-        </div>
- 
+
+                <div class="detalhe-linha">
+                    <span class="detalhe-icone">🎁</span>
+                    <div class="detalhe-texto">
+                        Lembre de trazer a <strong>fralda</strong> e<br>
+                        um miminho especial!
+                    </div>
+                </div>
+
+                <p class="aviso-wpp">Que tal avisar a mamãe agora? 💬</p>
+
+                <!-- Botão WhatsApp -->
+                <a id="btnZap" href="#" target="_blank" rel="noopener" class="btn-wpp">
+                    <svg class="wpp-icon" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    Avisar pelo WhatsApp
+                </a>
+
+                <a href="/" class="btn-voltar">⬅ Voltar para o convite</a>
+
+            </div><!-- /sucesso-body -->
+
+        </div><!-- /card-inner -->
     </div><!-- /card-sucesso -->
- 
+
     <script>
         /* =========================================================
            LINK DO WHATSAPP
@@ -403,76 +574,75 @@ Copiar
         const mensagem = "Oi! Acabei de confirmar minha presença no Chá da Ayla Maria! Mal posso esperar! 🎀😊";
         document.getElementById("btnZap").href =
             `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
- 
+
         /* =========================================================
-           CONFETES — canvas puro, sem biblioteca externa
-           Cores da paleta do site (rosa, dourado, branco)
+           CONFETES — canvas puro, sem biblioteca
+           Cores da paleta do site.
+           Roda em requestAnimationFrame e para sozinho após ~5s.
         ========================================================= */
         (function () {
-            const canvas  = document.getElementById("confettiCanvas");
-            const ctx     = canvas.getContext("2d");
-            const cores   = [
+            const canvas = document.getElementById("confettiCanvas");
+            const ctx    = canvas.getContext("2d");
+
+            const cores = [
                 "#f9a8c9", "#e8829a", "#c4687c", "#8b3a52",
-                "#e8d48a", "#c9a84c", "#fce8ec", "#ffffff",
-                "#f0c8b8", "#fbc4d8"
+                "#e8d48a", "#c9a84c", "#fce8ec", "#fffcfd",
+                "#f0c8b8", "#fbc4d8", "#d4909f"
             ];
- 
+
             let particulas = [];
-            let animando   = true;
- 
-            function resize() {
+            let rodando    = true;
+            let frame      = 0;
+
+            function dimensionar() {
                 canvas.width  = window.innerWidth;
                 canvas.height = window.innerHeight;
             }
-            resize();
-            window.addEventListener("resize", resize);
- 
-            /* Cria uma partícula */
-            function criarParticula() {
+            dimensionar();
+            window.addEventListener("resize", dimensionar, { passive: true });
+
+            function nova() {
                 return {
-                    x:      Math.random() * canvas.width,
-                    y:      Math.random() * -canvas.height * 0.3,
-                    w:      Math.random() * 9 + 4,
-                    h:      Math.random() * 5 + 3,
-                    cor:    cores[Math.floor(Math.random() * cores.length)],
-                    vel:    Math.random() * 2.5 + 1.2,
-                    angulo: Math.random() * Math.PI * 2,
-                    spin:   (Math.random() - 0.5) * 0.14,
-                    oscX:   (Math.random() - 0.5) * 1.2,
-                    opac:   Math.random() * 0.5 + 0.5,
-                    forma:  Math.random() > 0.6 ? "circle" : "rect",
+                    x:     Math.random() * canvas.width,
+                    y:     Math.random() * -canvas.height * 0.25,
+                    w:     Math.random() * 9 + 4,
+                    h:     Math.random() * 5 + 3,
+                    cor:   cores[Math.floor(Math.random() * cores.length)],
+                    vel:   Math.random() * 2.4 + 1.1,
+                    ang:   Math.random() * Math.PI * 2,
+                    spin:  (Math.random() - 0.5) * 0.13,
+                    oscX:  (Math.random() - 0.5) * 1.1,
+                    opac:  Math.random() * 0.5 + 0.45,
+                    forma: Math.random() > 0.55 ? "circle" : "rect",
                 };
             }
- 
-            /* Inicializa burst inicial */
-            for (let i = 0; i < 110; i++) {
-                const p = criarParticula();
-                p.y = Math.random() * canvas.height; // já espalhadas na tela
+
+            /* Burst inicial: 100 partículas já na tela */
+            for (let i = 0; i < 100; i++) {
+                const p = nova();
+                p.y = Math.random() * canvas.height;
                 particulas.push(p);
             }
- 
-            let frame = 0;
-            function loop() {
-                if (!animando) return;
+
+            function animar() {
+                if (!rodando) return;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 frame++;
- 
-                // Adiciona novas partículas nos primeiros 4 segundos (240 frames a 60fps)
-                if (frame < 240 && frame % 4 === 0) {
-                    particulas.push(criarParticula());
-                }
- 
-                particulas.forEach((p, i) => {
-                    p.y      += p.vel;
-                    p.x      += p.oscX * Math.sin(p.y * 0.04);
-                    p.angulo += p.spin;
- 
+
+                /* Novas partículas nos primeiros ~4s (240 frames) */
+                if (frame < 240 && frame % 5 === 0) particulas.push(nova());
+
+                particulas = particulas.filter(p => {
+                    p.y   += p.vel;
+                    p.x   += p.oscX * Math.sin(p.y * 0.038);
+                    p.ang += p.spin;
+
                     ctx.save();
                     ctx.translate(p.x, p.y);
-                    ctx.rotate(p.angulo);
+                    ctx.rotate(p.ang);
                     ctx.globalAlpha = p.opac;
                     ctx.fillStyle   = p.cor;
- 
+
                     if (p.forma === "circle") {
                         ctx.beginPath();
                         ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
@@ -480,28 +650,24 @@ Copiar
                     } else {
                         ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
                     }
- 
                     ctx.restore();
- 
-                    // Remove quando sai da tela
-                    if (p.y > canvas.height + 20) {
-                        particulas.splice(i, 1);
-                    }
+
+                    return p.y < canvas.height + 30;
                 });
- 
-                // Para de redesenhar quando acabam as partículas (>8s)
-                if (frame > 500 && particulas.length === 0) {
-                    animando = false;
+
+                /* Para quando não há mais partículas e já passaram 6s */
+                if (frame > 360 && particulas.length === 0) {
+                    rodando = false;
                     return;
                 }
- 
-                requestAnimationFrame(loop);
+
+                requestAnimationFrame(animar);
             }
- 
-            // Inicia após pequeno delay para a animação do card terminar
-            setTimeout(loop, 400);
+
+            /* Inicia após a animação de entrada do card (800ms) */
+            setTimeout(animar, 600);
         })();
     </script>
- 
+
 </body>
 </html>
