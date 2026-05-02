@@ -2,171 +2,151 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <!--
-        viewport-fit=cover: essencial para iPhone com notch/Dynamic Island —
-        garante que o fundo alcance as bordas físicas da tela
-    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Confirmado! — Chá da Ayla Maria</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Serif+Display:ital@0;1&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 
     <style>
-        /* ============================================
-           TOKENS — identidade visual unificada
-        ============================================ */
+        /* ════════════════════════════════════════════
+           TOKENS — idênticos ao index.html
+        ════════════════════════════════════════════ */
         :root {
-            --rose-deep:   #8b3a52;
-            --rose-mid:    #c4687c;
-            --rose-dusty:  #d4909f;
-            --rose-pale:   #fce8ec;
-            --rose-blush:  #f5d5da;
-            --gold:        #c9a84c;
-            --gold-light:  #e8d48a;
-            --wine:        #7a2d45;
-            --text-dark:   #5a2535;
-            --text-mid:    #8b5a65;
-            --text-light:  #b08a95;
-            --white:       #fffcfd;
-            --wpp:         #25D366;
-            --wpp-dark:    #1da851;
-            --ease:        all 0.3s cubic-bezier(0.4,0,0.2,1);
+            --wine:         #6b2038;
+            --rose-deep:    #8b3a52;
+            --rose-mid:     #b85c72;
+            --rose-blush:   #d4909f;
+            --rose-pale:    #f0c8d2;
+            --rose-mist:    #fae8ec;
+            --rose-frost:   #fdf3f5;
+            --petal:        #fff8fa;
 
-            /* Glassmorphism */
-            --glass-bg:     rgba(255, 252, 253, 0.84);
-            --glass-border: rgba(245, 213, 218, 0.55);
-            --glass-blur:   blur(20px);
+            --gold-deep:    #a07830;
+            --gold:         #c49840;
+            --gold-mid:     #d4b060;
+            --gold-light:   #e8cc88;
+            --gold-frost:   #f8f0d8;
+
+            --wpp:          #25D366;
+            --wpp-dark:     #1da851;
+
+            --font-display: 'DM Serif Display', Georgia, serif;
+            --font-serif:   'Cormorant Garamond', Georgia, serif;
+            --font-ui:      'Jost', sans-serif;
+
+            --r-md: 20px;
+            --r-lg: 28px;
+            --r-xl: 36px;
+
+            --shadow-card:
+                0 1px 0 rgba(255,255,255,0.9) inset,
+                0 2px 4px rgba(107,32,56,0.04),
+                0 8px 24px rgba(107,32,56,0.08),
+                0 24px 64px rgba(107,32,56,0.10);
+            --shadow-lift:
+                0 1px 0 rgba(255,255,255,0.9) inset,
+                0 16px 60px rgba(107,32,56,0.16),
+                0 40px 100px rgba(107,32,56,0.12);
+
+            --glass:        rgba(253,243,245,0.80);
+            --glass-border: rgba(232,204,136,0.35);
+            --glass-blur:   saturate(180%) blur(22px);
+
+            --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --t-mid: 0.38s;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-text-size-adjust: 100%; height: 100%; }
 
-        /*
-            html e body sem overflow: hidden —
-            isso é o que causava o conteúdo cortado.
-            Só o canvas de confetes é fixed; tudo mais flui normalmente.
-        */
-        html {
-            scroll-behavior: smooth;
-            /* Fallback para browsers sem suporte a dvh */
-            height: 100%;
-        }
-
+        /* ════════════════════════════════════════════
+           BODY — Mesh gradient + grain (=index.html)
+        ════════════════════════════════════════════ */
         body {
-            font-family: 'Nunito', sans-serif;
+            font-family: var(--font-ui);
+            color: var(--wine);
 
-            /*
-                CORREÇÃO PRINCIPAL DO VIEWPORT:
-                min-height em camadas de fallback:
-                  1. 100vh           — browsers antigos
-                  2. 100dvh          — Dynamic Viewport Height (Safari 15.4+, Chrome 108+)
-                                       acompanha o colapso da barra de endereços em mobile
-                A regra mais recente que o browser entende prevalece.
-            */
+            /* DVH com fallback para centralização perfeita */
             min-height: 100vh;
             min-height: 100dvh;
 
-            background: linear-gradient(145deg, #fdf0f3 0%, #fef8ee 60%, #fdf5ee 100%);
-            /* background fixo: não rola junto com o card, mantém visual bonito no scroll */
+            background-color: #fdf0f3;
+            background-image:
+                radial-gradient(ellipse 80% 60% at 15%  10%,  rgba(240,200,210,0.55) 0%, transparent 65%),
+                radial-gradient(ellipse 60% 50% at 85%  5%,   rgba(232,204,136,0.28) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 60% at 90%  75%,  rgba(212,144,159,0.30) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 10%  85%,  rgba(248,240,216,0.40) 0%, transparent 55%),
+                radial-gradient(ellipse 100% 80% at 50%  50%, rgba(253,243,245,1.00) 0%, transparent 100%);
             background-attachment: fixed;
 
-            /*
-                SCROLL INTELIGENTE:
-                - overflow-x: hidden   → sem scroll horizontal
-                - overflow-y: auto     → scroll vertical PERMITIDO quando necessário
-                NÃO usar overflow: hidden aqui — isso bloqueava scroll em telas pequenas
-            */
-            overflow-x: hidden;
-            overflow-y: auto;
-
-            /*
-                Layout: centraliza o card verticalmente quando há espaço,
-                empilha quando o conteúdo é maior que a tela (celulares pequenos)
-            */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
 
-            /*
-                Padding com safe-area-inset: respeita o notch/Dynamic Island
-                e a barra de gesto inferior do iPhone.
-                Fallback para browsers que não suportam env()
-            */
-            padding: 24px 16px;
-            padding-top:    max(24px, env(safe-area-inset-top,    24px));
-            padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+            /* Scroll inteligente — não bloqueia conteúdo */
+            overflow-x: hidden;
+            overflow-y: auto;
+
+            /* Safe area para iPhone com notch */
+            padding: 32px 16px;
+            padding-top:    max(32px, env(safe-area-inset-top,    32px));
+            padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
             padding-left:   max(16px, env(safe-area-inset-left,   16px));
             padding-right:  max(16px, env(safe-area-inset-right,  16px));
 
             position: relative;
         }
 
-        /* ============================================
-           CANVAS DE CONFETES — sempre fixo, nunca bloqueia
-        ============================================ */
-        #confettiCanvas {
-            position: fixed;
-            inset: 0;
+        /* Grain overlay */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            background-size: 200px 200px;
+            opacity: 0.025;
             pointer-events: none;
             z-index: 0;
-            /* canvas não deve afetar o layout */
-            width: 100%;
-            height: 100%;
         }
 
-        /* ============================================
-           CARD PRINCIPAL — glassmorphism
-        ============================================ */
+        /* Canvas de confetes — sempre fixo, z-index baixo */
+        #confettiCanvas {
+            position: fixed; inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            width: 100%; height: 100%;
+        }
+
+        /* ════════════════════════════════════════════
+           CARD PRINCIPAL
+        ════════════════════════════════════════════ */
         .card-sucesso {
             position: relative;
             z-index: 1;
             width: 100%;
-
-            /*
-                max-width com clamp:
-                - mínimo: nunca menor que a tela em celulares
-                - ideal: 88vw em tablets  
-                - máximo: 460px em desktop
-            */
             max-width: clamp(300px, 92vw, 460px);
-
-            background: var(--glass-bg);
+            background: var(--glass);
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
             border: 1px solid var(--glass-border);
-            border-radius: 32px;
-            box-shadow:
-                0 24px 80px rgba(139, 58, 82, 0.15),
-                0 8px 24px rgba(139, 58, 82, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.75);
-
-            /*
-                overflow: visible (não hidden) —
-                hidden bloqueava o scroll interno em celulares pequenos.
-                A borda arredondada é mantida via border-radius no próprio elemento.
-            */
-            overflow: visible;
-
-            animation: cardReveal 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-
-            /* Garante que o card não seja maior que a área visível */
-            max-height: none;
+            border-radius: var(--r-xl);
+            box-shadow: var(--shadow-card);
+            overflow: visible; /* não bloqueia scroll interno */
+            animation: cardReveal 0.9s var(--ease-spring) both;
         }
 
-        /*
-            Wrapper interno com overflow: hidden para a faixa dourada
-            e o gradiente do header não vazarem do border-radius
-        */
+        /* Wrapper interno com overflow:hidden para o border-radius funcionar */
         .card-inner {
-            border-radius: 32px;
+            border-radius: var(--r-xl);
             overflow: hidden;
         }
 
-        /* ============================================
-           FAIXA DOURADA NO TOPO
-        ============================================ */
+        /* ════════════════════════════════════════════
+           FAIXA DOURADA SUPERIOR
+        ════════════════════════════════════════════ */
         .faixa-dourada {
             height: 3px;
             background: linear-gradient(90deg,
@@ -177,144 +157,199 @@
                 transparent 100%);
         }
 
-        /* ============================================
-           HEADER DO CARD
-        ============================================ */
+        /* ════════════════════════════════════════════
+           HEADER
+        ════════════════════════════════════════════ */
         .sucesso-header {
-            padding: 30px 28px 18px;
+            padding: 32px 28px 20px;
             text-align: center;
-            background: linear-gradient(175deg, rgba(252,232,236,0.65) 0%, transparent 100%);
+            background: linear-gradient(175deg, rgba(252,232,236,0.6) 0%, transparent 100%);
+            position: relative;
         }
 
-        /* Ícone animado com anéis pulsantes */
+        /* Anel decorativo de fundo */
+        .sucesso-header::before {
+            content: '';
+            position: absolute;
+            width: 160px; height: 160px;
+            border-radius: 50%;
+            border: 1px solid rgba(196,152,64,0.15);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -65%);
+            animation: ringBreath 5s ease-in-out infinite;
+        }
+
+        @keyframes ringBreath {
+            0%,100% { transform: translate(-50%,-65%) scale(1);   opacity:0.6; }
+            50%      { transform: translate(-50%,-65%) scale(1.05); opacity:1; }
+        }
+
+        /* Ícone central animado */
         .icone-wrap {
             position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 88px;
-            height: 88px;
-            margin-bottom: 16px;
+            width: 90px; height: 90px;
+            margin-bottom: 18px;
         }
 
-        /* Anéis: dois pseudo-elementos com delays diferentes */
-        .icone-wrap::before,
-        .icone-wrap::after {
+        .icone-wrap::before, .icone-wrap::after {
             content: '';
             position: absolute;
             border-radius: 50%;
             border: 2px solid var(--rose-mid);
-            animation: ringPulse 2.6s ease-out infinite;
+            animation: ringPulse 2.8s ease-out infinite;
         }
-        .icone-wrap::before { inset: 0;       animation-delay: 0s; }
-        .icone-wrap::after  { inset: -10px;   animation-delay: 0.9s; opacity: 0; }
+        .icone-wrap::before { inset: 0;      animation-delay: 0s;   }
+        .icone-wrap::after  { inset: -12px;  animation-delay: 0.95s; opacity: 0; }
+
+        @keyframes ringPulse {
+            0%   { transform: scale(1);   opacity: 0.75; }
+            100% { transform: scale(1.75); opacity: 0; }
+        }
 
         .icone-circulo {
-            width: 78px;
-            height: 78px;
-            background: linear-gradient(135deg, var(--rose-mid), var(--rose-deep));
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, var(--rose-mid), var(--wine));
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             font-size: 2rem;
-            box-shadow: 0 8px 28px rgba(139,58,82,0.28);
-            animation: iconBounce 0.65s 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
-            position: relative;
-            z-index: 1;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.2) inset,
+                0 8px 32px rgba(107,32,56,0.35);
+            animation: iconPop 0.7s 0.35s var(--ease-spring) both;
+            position: relative; z-index: 1;
         }
 
+        @keyframes iconPop {
+            from { opacity:0; transform: scale(0.3) rotate(-15deg); }
+            to   { opacity:1; transform: scale(1) rotate(0deg); }
+        }
+
+        /* Título adaptativo */
         .sucesso-titulo {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(1.5rem, 5.5vw, 1.9rem);
+            font-family: var(--font-display);
+            font-size: clamp(1.6rem, 6vw, 2.1rem);
             color: var(--wine);
+            background: linear-gradient(135deg, var(--wine), var(--rose-deep));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 8px;
-            animation: fadeUp 0.6s 0.5s both;
+            animation: fadeUp 0.6s 0.52s both;
             line-height: 1.2;
         }
 
         .sucesso-sub {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: var(--font-serif);
             font-style: italic;
-            font-size: clamp(0.98rem, 3.2vw, 1.1rem);
-            color: var(--text-mid);
-            line-height: 1.65;
-            animation: fadeUp 0.6s 0.62s both;
+            font-size: clamp(0.98rem, 3.2vw, 1.12rem);
+            color: var(--rose-deep);
+            line-height: 1.7;
+            opacity: 0.8;
+            animation: fadeUp 0.6s 0.64s both;
         }
 
-        /* ============================================
+        /* ════════════════════════════════════════════
            DIVISOR ORNAMENTAL
-        ============================================ */
+        ════════════════════════════════════════════ */
         .divisor-ornamental {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 18px 28px;
-            animation: fadeUp 0.6s 0.72s both;
+            display: flex; align-items: center; gap: 14px;
+            margin: 20px 28px;
+            animation: fadeUp 0.6s 0.74s both;
         }
         .div-ouro {
-            flex: 1;
-            height: 1px;
+            flex: 1; height: 1px;
             background: linear-gradient(90deg, transparent, var(--gold-light));
         }
-        .div-ouro.r {
-            background: linear-gradient(90deg, var(--gold-light), transparent);
-        }
-        .div-emoji { font-size: 1rem; }
+        .div-ouro.r { background: linear-gradient(90deg, var(--gold-light), transparent); }
+        .div-emoji  { font-size: 1rem; }
 
-        /* ============================================
-           CORPO DO CARD — detalhes do evento
-        ============================================ */
+        /* ════════════════════════════════════════════
+           CORPO — detalhes com glass cards
+        ════════════════════════════════════════════ */
         .sucesso-body {
-            padding: 0 24px 28px;
+            padding: 0 24px 30px;
         }
 
-        /* Linhas de detalhe com micro glass */
+        /* Cards de detalhe — glass com hover */
         .detalhe-linha {
             display: flex;
             align-items: flex-start;
-            gap: 12px;
-            padding: 12px 14px;
+            gap: 14px;
+            padding: 14px 16px;
             background: rgba(252,232,236,0.38);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            border: 1px solid rgba(245,213,218,0.45);
-            border-radius: 14px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(232,204,136,0.28);
+            border-radius: 16px;
             margin-bottom: 10px;
             animation: fadeUp 0.5s both;
-            transition: var(--ease);
+            transition: transform var(--t-mid) var(--ease-out),
+                        background var(--t-mid),
+                        box-shadow var(--t-mid);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset;
         }
+
         .detalhe-linha:hover {
-            background: rgba(252,232,236,0.6);
-            transform: translateX(3px);
+            background: rgba(252,232,236,0.62);
+            transform: translateX(4px);
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.8) inset,
+                0 4px 16px rgba(107,32,56,0.08);
         }
-        .detalhe-linha:nth-child(1) { animation-delay: 0.78s; }
-        .detalhe-linha:nth-child(2) { animation-delay: 0.88s; }
-        .detalhe-linha:nth-child(3) { animation-delay: 0.98s; }
 
-        .detalhe-icone {
-            font-size: 1.15rem;
+        .detalhe-linha:nth-child(1) { animation-delay: 0.80s; }
+        .detalhe-linha:nth-child(2) { animation-delay: 0.90s; }
+        .detalhe-linha:nth-child(3) { animation-delay: 1.00s; }
+
+        .detalhe-icone-wrap {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--rose-mist), var(--rose-frost));
+            border: 1px solid rgba(212,144,159,0.3);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
             flex-shrink: 0;
-            margin-top: 1px;
+            box-shadow: 0 2px 8px rgba(107,32,56,0.08);
         }
-        .detalhe-texto {
-            font-size: 0.87rem;
-            color: var(--text-dark);
-            line-height: 1.5;
-        }
-        .detalhe-texto strong { color: var(--rose-deep); }
 
-        /* ============================================
-           MENSAGEM + BOTÃO WHATSAPP
-        ============================================ */
+        .detalhe-texto {
+            font-family: var(--font-serif);
+            font-size: 1rem;
+            color: var(--wine);
+            line-height: 1.55;
+        }
+
+        .detalhe-texto strong {
+            font-weight: 600;
+            color: var(--rose-deep);
+        }
+
+        /* Label pequena acima do valor */
+        .detalhe-label {
+            font-family: var(--font-ui);
+            font-size: 0.58rem;
+            font-weight: 500;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--gold-deep);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* ════════════════════════════════════════════
+           AVISO + BOTÃO WHATSAPP
+        ════════════════════════════════════════════ */
         .aviso-wpp {
             text-align: center;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: var(--font-serif);
             font-style: italic;
             font-size: 1rem;
-            color: var(--text-light);
+            color: var(--rose-blush);
             margin: 18px 0 12px;
-            animation: fadeUp 0.5s 1.06s both;
+            animation: fadeUp 0.5s 1.08s both;
         }
 
         .btn-wpp {
@@ -323,183 +358,146 @@
             justify-content: center;
             gap: 10px;
             width: 100%;
-            padding: 16px 20px;
-            background: linear-gradient(135deg, #2ecc71 0%, var(--wpp) 50%, #20ba5a 100%);
+            padding: 17px 22px;
+            background: linear-gradient(135deg, #30d370 0%, var(--wpp) 50%, #1cba5c 100%);
             color: white;
             text-decoration: none;
-            border-radius: 16px;
-            font-family: 'Nunito', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 700;
-            letter-spacing: 0.8px;
+            border-radius: var(--r-md);
+            font-family: var(--font-ui);
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
             min-height: 54px;
             box-shadow:
-                0 8px 28px rgba(37,211,102,0.3),
-                0 2px 8px rgba(37,211,102,0.18);
-            transition: var(--ease);
+                0 1px 0 rgba(255,255,255,0.15) inset,
+                0 8px 32px rgba(37,211,102,0.32),
+                0 2px 8px rgba(37,211,102,0.2);
+            transition:
+                transform var(--t-mid) var(--ease-out),
+                box-shadow var(--t-mid) var(--ease-out);
             position: relative;
             overflow: hidden;
-            animation: fadeUp 0.5s 1.12s both;
+            animation: fadeUp 0.5s 1.14s both;
         }
 
-        /* Camada de brilho no hover */
+        /* Shimmer no hover */
         .btn-wpp::before {
             content: '';
             position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.22), transparent);
-            opacity: 0;
-            transition: opacity 0.28s;
-        }
-
-        /* Efeito ripple no clique */
-        .btn-wpp::after {
-            content: '';
-            position: absolute;
-            width: 0; height: 0;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.25);
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.5s ease, height 0.5s ease, opacity 0.5s;
-            opacity: 0;
+            top: 0; left: -100%;
+            width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-15deg);
+            transition: left 0.55s ease;
         }
 
         .btn-wpp:hover {
             transform: translateY(-3px) scale(1.01);
-            box-shadow: 0 14px 40px rgba(37,211,102,0.4);
-        }
-        .btn-wpp:hover::before { opacity: 1; }
-        .btn-wpp:active {
-            transform: translateY(0) scale(0.99);
-        }
-        .btn-wpp:active::after {
-            width: 260px; height: 260px; opacity: 0;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.2) inset,
+                0 16px 48px rgba(37,211,102,0.4);
         }
 
-        .wpp-icon { width: 21px; height: 21px; flex-shrink: 0; }
+        .btn-wpp:hover::before { left: 140%; }
+        .btn-wpp:active { transform: scale(0.98); }
 
-        /* ============================================
+        .wpp-icon { width: 22px; height: 22px; flex-shrink: 0; }
+
+        /* ════════════════════════════════════════════
            BOTÃO VOLTAR
-        ============================================ */
+        ════════════════════════════════════════════ */
         .btn-voltar {
             display: block;
             text-align: center;
             margin-top: 14px;
-            color: var(--rose-dusty);
+            font-family: var(--font-serif);
+            font-style: italic;
+            color: var(--rose-blush);
             text-decoration: none;
-            font-size: 0.82rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            transition: var(--ease);
-            animation: fadeUp 0.5s 1.18s both;
+            font-size: 0.9rem;
+            transition: color var(--t-mid);
+            animation: fadeUp 0.5s 1.20s both;
         }
         .btn-voltar:hover { color: var(--rose-deep); }
 
-        /* ============================================
-           PÉTALAS DECORATIVAS — CSS puro, z-index baixo
-        ============================================ */
+        /* ════════════════════════════════════════════
+           PÉTALAS DECORATIVAS
+        ════════════════════════════════════════════ */
         .petala {
             position: fixed;
             pointer-events: none;
             z-index: 0;
             opacity: 0;
-            animation: petalaDrop linear infinite;
-            /* Garante que não cause scroll */
             will-change: transform, opacity;
-        }
-
-        /* ============================================
-           ANIMAÇÕES
-        ============================================ */
-        @keyframes cardReveal {
-            from { opacity: 0; transform: translateY(32px) scale(0.93); }
-            to   { opacity: 1; transform: translateY(0)   scale(1); }
-        }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(14px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes iconBounce {
-            from { opacity: 0; transform: scale(0.35) rotate(-10deg); }
-            to   { opacity: 1; transform: scale(1) rotate(0deg); }
-        }
-
-        @keyframes ringPulse {
-            0%   { transform: scale(1);   opacity: 0.7; }
-            100% { transform: scale(1.7); opacity: 0; }
+            animation: petalaDrop linear infinite;
         }
 
         @keyframes petalaDrop {
             0%   { transform: translateY(-60px) rotate(0deg);   opacity: 0; }
-            8%   { opacity: 0.55; }
-            92%  { opacity: 0.35; }
-            100% { transform: translateY(110vh) rotate(380deg); opacity: 0; }
+            8%   { opacity: 0.5; }
+            92%  { opacity: 0.3; }
+            100% { transform: translateY(110vh) rotate(400deg); opacity: 0; }
         }
 
-        /* ============================================
-           RESPONSIVIDADE FINA
-        ============================================ */
+        /* ════════════════════════════════════════════
+           ANIMAÇÕES
+        ════════════════════════════════════════════ */
+        @keyframes cardReveal {
+            from { opacity:0; transform: translateY(36px) scale(0.92); }
+            to   { opacity:1; transform: translateY(0)    scale(1); }
+        }
 
-        /* Telas muito pequenas: compacta o card */
+        @keyframes fadeUp {
+            from { opacity:0; transform: translateY(14px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+
+        /* ════════════════════════════════════════════
+           RESPONSIVIDADE
+        ════════════════════════════════════════════ */
         @media (max-width: 360px) {
             .sucesso-header { padding: 22px 18px 14px; }
             .sucesso-body   { padding: 0 16px 22px; }
             .divisor-ornamental { margin: 14px 18px; }
-            .icone-circulo { width: 68px; height: 68px; font-size: 1.7rem; }
-            .icone-wrap    { width: 76px; height: 76px; }
+            .icone-circulo  { width: 68px; height: 68px; font-size: 1.7rem; }
+            .icone-wrap     { width: 76px; height: 76px; }
         }
 
-        /* Tablets e desktop: aumenta o padding lateral do card */
         @media (min-width: 480px) {
-            .sucesso-header { padding: 36px 36px 20px; }
-            .sucesso-body   { padding: 0 32px 32px; }
-            .divisor-ornamental { margin: 20px 36px; }
+            .sucesso-header { padding: 38px 38px 22px; }
+            .sucesso-body   { padding: 0 34px 34px; }
+            .divisor-ornamental { margin: 22px 38px; }
         }
 
-        /* Desktop: sombra mais dramática */
-        @media (min-width: 768px) {
-            .card-sucesso {
-                box-shadow:
-                    0 32px 100px rgba(139,58,82,0.18),
-                    0 12px 36px rgba(139,58,82,0.1),
-                    inset 0 1px 0 rgba(255,255,255,0.8);
-            }
-        }
-
-        /* Modo paisagem em celulares: reduz padding vertical para não cortar */
+        /* Modo paisagem — evita card cortado */
         @media (max-height: 600px) and (orientation: landscape) {
-            body { justify-content: flex-start; padding-top: 16px; padding-bottom: 16px; }
-            .sucesso-header { padding-top: 18px; padding-bottom: 10px; }
-            .icone-wrap     { width: 60px; height: 60px; margin-bottom: 10px; }
-            .icone-circulo  { width: 54px; height: 54px; font-size: 1.5rem; }
+            body { justify-content: flex-start; padding-top: 16px; }
+            .icone-wrap    { width: 60px; height: 60px; margin-bottom: 10px; }
+            .icone-circulo { width: 52px; height: 52px; font-size: 1.5rem; }
             .sucesso-titulo { font-size: 1.3rem; }
             .divisor-ornamental { margin: 10px 28px; }
-            .detalhe-linha  { padding: 8px 12px; margin-bottom: 7px; }
-            .aviso-wpp      { margin: 12px 0 8px; }
+            .detalhe-linha { padding: 9px 12px; margin-bottom: 7px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Canvas dos confetes (z-index 0, fixed, não afeta layout) -->
+    <!-- Confetes -->
     <canvas id="confettiCanvas"></canvas>
 
-    <!-- Pétalas CSS flutuantes -->
-    <div class="petala" style="left:6%;  width:13px;height:13px;background:radial-gradient(#f9a8c9,#e8829a);border-radius:50% 0 50% 0;animation-duration:8s; animation-delay:0.3s;"></div>
-    <div class="petala" style="left:18%; width:9px; height:9px; background:radial-gradient(#fbc4d8,#f0a0b4);border-radius:50%;            animation-duration:10s;animation-delay:1.6s;"></div>
-    <div class="petala" style="left:60%; width:15px;height:11px;background:radial-gradient(#f9d5e2,#e8829a);border-radius:50% 0 50% 0;animation-duration:9s; animation-delay:0.9s;"></div>
-    <div class="petala" style="left:78%; width:10px;height:10px;background:radial-gradient(#e8d48a,#c9a84c);border-radius:50%;            animation-duration:11s;animation-delay:2.3s;"></div>
-    <div class="petala" style="left:42%; width:12px;height:12px;background:radial-gradient(#fbc4d8,#d4909f);border-radius:0 50% 0 50%;   animation-duration:7s; animation-delay:3.2s;"></div>
-    <div class="petala" style="left:88%; width:8px; height:8px; background:radial-gradient(#f9a8c9,#c4687c);border-radius:50%;            animation-duration:12s;animation-delay:0.6s;"></div>
+    <!-- Pétalas CSS -->
+    <div class="petala" style="left:7%;  width:13px;height:13px;background:radial-gradient(#f9a8c9,#e8829a);border-radius:50% 0 50% 0;animation-duration:8.5s; animation-delay:0.4s;"></div>
+    <div class="petala" style="left:20%; width:9px; height:9px; background:radial-gradient(#fbc4d8,#f0a0b4);border-radius:50%;            animation-duration:10s; animation-delay:1.8s;"></div>
+    <div class="petala" style="left:62%; width:16px;height:11px;background:radial-gradient(#f9d5e2,#e8829a);border-radius:50% 0 50% 0;animation-duration:9.5s; animation-delay:1.0s;"></div>
+    <div class="petala" style="left:79%; width:10px;height:10px;background:radial-gradient(#e8d48a,#c9a84c);border-radius:50%;            animation-duration:11s; animation-delay:2.5s;"></div>
+    <div class="petala" style="left:43%; width:12px;height:12px;background:radial-gradient(#fbc4d8,#d4909f);border-radius:0 50% 0 50%;   animation-duration:7.5s; animation-delay:3.4s;"></div>
+    <div class="petala" style="left:89%; width:8px; height:8px; background:radial-gradient(#f9a8c9,#c4687c);border-radius:50%;            animation-duration:12s; animation-delay:0.7s;"></div>
 
-    <!-- CARD PRINCIPAL -->
+    <!-- CARD -->
     <div class="card-sucesso">
         <div class="card-inner">
 
-            <!-- Faixa dourada -->
             <div class="faixa-dourada"></div>
 
             <!-- Header -->
@@ -507,11 +505,9 @@
                 <div class="icone-wrap">
                     <div class="icone-circulo">🎀</div>
                 </div>
-
-                <h1 class="sucesso-titulo">Confirmação Recebida!</h1>
-                <p class="sucesso-sub">
-                    Que alegria! A Ayla Maria<br>
-                    já está ansiosa para te ver! 💕
+                <h1 class="sucesso-titulo" id="titulo-principal">Confirmação Recebida!</h1>
+                <p class="sucesso-sub" id="sub-principal">
+                    Que alegria! A Ayla Maria<br>já está ansiosa para te ver! 💕
                 </p>
             </div>
 
@@ -525,35 +521,41 @@
             <!-- Corpo -->
             <div class="sucesso-body">
 
+                <!-- Data -->
                 <div class="detalhe-linha">
-                    <span class="detalhe-icone">📅</span>
+                    <div class="detalhe-icone-wrap">📅</div>
                     <div class="detalhe-texto">
-                        <strong>Sábado, 07 de Fevereiro</strong><br>
+                        <span class="detalhe-label">Data do Evento</span>
+                        <strong>Domingo, 14 de Fevereiro</strong><br>
                         Às 20:00 horas
                     </div>
                 </div>
 
+                <!-- Local -->
                 <div class="detalhe-linha">
-                    <span class="detalhe-icone">📍</span>
+                    <div class="detalhe-icone-wrap">📍</div>
                     <div class="detalhe-texto">
+                        <span class="detalhe-label">Local</span>
                         <strong>Rua Cariri, 2339</strong><br>
                         Tabapuá, Caucaia
                     </div>
                 </div>
 
-                <div class="detalhe-linha">
-                    <span class="detalhe-icone">🎁</span>
+                <!-- Fralda — oculto condicionalmente -->
+                <div class="detalhe-linha" id="bloco-fralda">
+                    <div class="detalhe-icone-wrap">🎁</div>
                     <div class="detalhe-texto">
+                        <span class="detalhe-label">Lembrete</span>
                         Lembre de trazer a <strong>fralda</strong> e<br>
                         um miminho especial!
                     </div>
                 </div>
 
-                <p class="aviso-wpp">Que tal avisar a mamãe agora? 💬</p>
+                <!-- WhatsApp -->
+                <p class="aviso-wpp" id="aviso-wpp">Que tal avisar a mamãe agora? 💬</p>
 
-                <!-- Botão WhatsApp -->
                 <a id="btnZap" href="#" target="_blank" rel="noopener" class="btn-wpp">
-                    <svg class="wpp-icon" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <svg class="wpp-icon" viewBox="0 0 24 24" fill="white" aria-hidden="true">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                     </svg>
                     Avisar pelo WhatsApp
@@ -562,88 +564,110 @@
                 <a href="/" class="btn-voltar">⬅ Voltar para o convite</a>
 
             </div><!-- /sucesso-body -->
-
         </div><!-- /card-inner -->
     </div><!-- /card-sucesso -->
 
     <script>
-        /* =========================================================
-           LINK DO WHATSAPP
-        ========================================================= */
-        const telefone = "5585991994249";
-        const mensagem = "Oi! Acabei de confirmar minha presença no Chá da Ayla Maria! Mal posso esperar! 🎀😊";
-        document.getElementById("btnZap").href =
-            `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+        /* ──────────────────────────────────────────
+           LÓGICA CONDICIONAL — ?presenca=nao
+        ────────────────────────────────────────── */
+        (function () {
+            const params   = new URLSearchParams(window.location.search);
+            const presenca = (params.get("presenca") || "sim").trim().toLowerCase();
+            const recusou  = presenca === "nao" || presenca === "não";
 
-        /* =========================================================
-           CONFETES — canvas puro, sem biblioteca
-           Cores da paleta do site.
-           Roda em requestAnimationFrame e para sozinho após ~5s.
-        ========================================================= */
+            if (recusou) {
+                const blocoFralda = document.getElementById("bloco-fralda");
+                if (blocoFralda) blocoFralda.style.display = "none";
+
+                const titulo = document.getElementById("titulo-principal");
+                const sub    = document.getElementById("sub-principal");
+                const aviso  = document.getElementById("aviso-wpp");
+
+                if (titulo) titulo.textContent = "Resposta Recebida!";
+                if (sub)    sub.innerHTML = "Que pena que não poderá vir… 🥹<br>A Ayla Maria vai sentir sua falta!";
+                if (aviso)  aviso.textContent = "Quer mandar um abraço para a mamãe? 💬";
+            }
+        })();
+
+        /* ──────────────────────────────────────────
+           WHATSAPP — mensagem adaptada
+        ────────────────────────────────────────── */
+        (function () {
+            const telefone = "5585991994249";
+            const params   = new URLSearchParams(window.location.search);
+            const presenca = (params.get("presenca") || "sim").trim().toLowerCase();
+            const recusou  = presenca === "nao" || presenca === "não";
+
+            const msg = recusou
+                ? "Oi! Infelizmente não vou conseguir ir ao Chá da Ayla Maria, mas estou torcendo muito por vocês! 🎀💕"
+                : "Oi! Acabei de confirmar minha presença no Chá da Ayla Maria! Mal posso esperar! 🎀😊";
+
+            document.getElementById("btnZap").href =
+                `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
+        })();
+
+        /* ──────────────────────────────────────────
+           CONFETES — canvas puro, paleta do site
+        ────────────────────────────────────────── */
         (function () {
             const canvas = document.getElementById("confettiCanvas");
             const ctx    = canvas.getContext("2d");
 
             const cores = [
-                "#f9a8c9", "#e8829a", "#c4687c", "#8b3a52",
-                "#e8d48a", "#c9a84c", "#fce8ec", "#fffcfd",
-                "#f0c8b8", "#fbc4d8", "#d4909f"
+                "#f9a8c9","#e8829a","#c4687c","#8b3a52",
+                "#e8d48a","#c9a84c","#fce8ec","#fffcfd",
+                "#f0c8b8","#fbc4d8","#d4909f","#e8cc88"
             ];
 
-            let particulas = [];
-            let rodando    = true;
-            let frame      = 0;
+            let parts = [], rodando = true, frame = 0;
 
-            function dimensionar() {
+            function resize() {
                 canvas.width  = window.innerWidth;
                 canvas.height = window.innerHeight;
             }
-            dimensionar();
-            window.addEventListener("resize", dimensionar, { passive: true });
+            resize();
+            window.addEventListener("resize", resize, { passive: true });
 
             function nova() {
                 return {
-                    x:     Math.random() * canvas.width,
-                    y:     Math.random() * -canvas.height * 0.25,
-                    w:     Math.random() * 9 + 4,
-                    h:     Math.random() * 5 + 3,
-                    cor:   cores[Math.floor(Math.random() * cores.length)],
-                    vel:   Math.random() * 2.4 + 1.1,
-                    ang:   Math.random() * Math.PI * 2,
-                    spin:  (Math.random() - 0.5) * 0.13,
-                    oscX:  (Math.random() - 0.5) * 1.1,
-                    opac:  Math.random() * 0.5 + 0.45,
-                    forma: Math.random() > 0.55 ? "circle" : "rect",
+                    x:    Math.random() * canvas.width,
+                    y:    Math.random() * -canvas.height * 0.25,
+                    w:    Math.random() * 10 + 4,
+                    h:    Math.random() * 6 + 3,
+                    cor:  cores[Math.floor(Math.random() * cores.length)],
+                    vel:  Math.random() * 2.6 + 1.1,
+                    ang:  Math.random() * Math.PI * 2,
+                    spin: (Math.random() - 0.5) * 0.14,
+                    oscX: (Math.random() - 0.5) * 1.2,
+                    opac: Math.random() * 0.5 + 0.4,
+                    tipo: Math.random() > 0.5 ? "circle" : "rect",
                 };
             }
 
-            /* Burst inicial: 100 partículas já na tela */
-            for (let i = 0; i < 100; i++) {
+            /* Burst inicial */
+            for (let i = 0; i < 110; i++) {
                 const p = nova();
                 p.y = Math.random() * canvas.height;
-                particulas.push(p);
+                parts.push(p);
             }
 
             function animar() {
                 if (!rodando) return;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 frame++;
+                if (frame < 260 && frame % 5 === 0) parts.push(nova());
 
-                /* Novas partículas nos primeiros ~4s (240 frames) */
-                if (frame < 240 && frame % 5 === 0) particulas.push(nova());
-
-                particulas = particulas.filter(p => {
+                parts = parts.filter(p => {
                     p.y   += p.vel;
-                    p.x   += p.oscX * Math.sin(p.y * 0.038);
+                    p.x   += p.oscX * Math.sin(p.y * 0.04);
                     p.ang += p.spin;
-
                     ctx.save();
                     ctx.translate(p.x, p.y);
                     ctx.rotate(p.ang);
                     ctx.globalAlpha = p.opac;
                     ctx.fillStyle   = p.cor;
-
-                    if (p.forma === "circle") {
+                    if (p.tipo === "circle") {
                         ctx.beginPath();
                         ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
                         ctx.fill();
@@ -651,21 +675,14 @@
                         ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
                     }
                     ctx.restore();
-
                     return p.y < canvas.height + 30;
                 });
 
-                /* Para quando não há mais partículas e já passaram 6s */
-                if (frame > 360 && particulas.length === 0) {
-                    rodando = false;
-                    return;
-                }
-
+                if (frame > 380 && parts.length === 0) { rodando = false; return; }
                 requestAnimationFrame(animar);
             }
 
-            /* Inicia após a animação de entrada do card (800ms) */
-            setTimeout(animar, 600);
+            setTimeout(animar, 550);
         })();
     </script>
 
